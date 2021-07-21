@@ -10,7 +10,7 @@ const resolvers = {
     user: async (_, { username }) => {
       return User.findOne({ username });
     },
-    me: async (_, _, context) => {
+    me: async (_, args, context) => {
       if (context.user) {
         return User.findOne({ _id: context.user._id });
       }
