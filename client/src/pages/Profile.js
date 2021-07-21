@@ -12,8 +12,8 @@ const Profile = () => {
   const { id } = useParams();
 
   // Get current user
-  const { loading, data } = useQuery(id ? QUERY_USER : QUERY_ME, {
-    variables: { _id: id },
+  const { loading, data, error } = useQuery(id ? QUERY_USER : QUERY_ME, {
+    variables: { id },
   });
 
   // Get a list of all users
@@ -21,6 +21,8 @@ const Profile = () => {
 
   const user = data?.me || data?.user || {};
   const users = usersData?.users || [];
+
+  if (error) console.log(error);
 
   // redirect to personal profile page if username is yours
   if (Auth.loggedIn() && Auth.getProfile().data._id === id) {
@@ -41,16 +43,18 @@ const Profile = () => {
   }
 
   const renderUserList = () => {
-    if (!usersLoading) return null;
+    if (usersLoading) return null;
+    // Only renders users who's profile we're not currently viewing
+    const notMeUsers = users.filter(o => o._id !== user._id);
     return (
       <div className="col-12 col-md-10 mb-5">
-        <UserList users={users} title={``} />
+        <UserList users={notMeUsers} title="User List" />
       </div>
     );
   };
 
   const renderCurrentUserInfo = () => {
-    if (!id) return null;
+    if (id) return null;
     return (
       <ul>
         <li>username: {user.username}</li>

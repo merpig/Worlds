@@ -6,26 +6,16 @@ export const QUERY_USERS = gql`
       _id
       username
       email
-      thoughts {
-        _id
-        thoughtText
-        createdAt
-      }
     }
   }
 `;
 
 export const QUERY_USER = gql`
-  query user($username: String!) {
-    user(username: $username) {
+  query user($id: ID!) {
+    user(id: $id) {
       _id
       username
       email
-      thoughts {
-        _id
-        thoughtText
-        createdAt
-      }
     }
   }
 `;
@@ -36,12 +26,6 @@ export const QUERY_ME = gql`
       _id
       username
       email
-      thoughts {
-        _id
-        thoughtText
-        thoughtAuthor
-        createdAt
-      }
     }
   }
 `;
