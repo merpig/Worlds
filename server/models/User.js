@@ -17,8 +17,21 @@ const userSchema = new Schema({
   password: {
     type: String,
     required: true,
-    minlength: 5,
-  }
+    minlength: 8,
+  },
+  character: {
+    type: Schema.Types.ObjectId, ref: 'Character',
+    required: true
+  },
+  currentPlacement: {
+    type: Schema.Types.ObjectId, ref: 'Placement'
+  },
+  worlds: [{
+    type: Schema.Types.ObjectId, ref: 'World'
+  }],
+  placements: [{
+    type: Schema.Types.ObjectId, ref: 'Placement'
+  }]
 });
 
 userSchema.pre('save', async function (next) {
