@@ -3,7 +3,6 @@ const { Schema, model } = require('mongoose');
 const characterSchema = new Schema({
     characterType: {
         type: String,
-        required: true
     },
     hasHair: {
         type: Boolean
@@ -11,10 +10,10 @@ const characterSchema = new Schema({
     hairColor: {
         type: String
     },
-    skinColor: {
+    topColor: {
         type: String
     },
-    shirtColor: {
+    skinColor: {
         type: String
     },
     pantsColor: {

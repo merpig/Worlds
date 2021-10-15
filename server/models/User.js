@@ -21,7 +21,6 @@ const userSchema = new Schema({
   },
   character: {
     type: Schema.Types.ObjectId, ref: 'Character',
-    required: true
   },
   currentPlacement: {
     type: Schema.Types.ObjectId, ref: 'Placement'

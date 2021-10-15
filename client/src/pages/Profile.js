@@ -55,6 +55,9 @@ const Profile = () => {
 
   const renderCurrentUserInfo = () => {
     if (id) return null;
+
+    console.log(user)
+
     return (
       <ul>
         <li>username: {user.username}</li>

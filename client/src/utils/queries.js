@@ -14,7 +14,6 @@ export const QUERY_USER = gql`
     user(id: $id) {
       _id
       username
-      email
     }
   }
 `;
