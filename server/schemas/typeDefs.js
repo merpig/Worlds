@@ -17,12 +17,14 @@ const typeDefs = gql`
     characterType: String
     hasHair: Boolean
     hairColor: String
+    shirtColor: String
     skinColor: String
     pantsColor: String
     shoeColor: String
   }
 
   type Placement {
+    _id: ID
     world: World
     section: Section
     x: Int
@@ -40,6 +42,7 @@ const typeDefs = gql`
   }
 
   type Section {
+    _id: ID
     belongsTo: World
     features: [Feature]
     players: [User]
@@ -47,6 +50,7 @@ const typeDefs = gql`
   }
 
   type Feature {
+    _id: ID
     name: String
     blocking: Boolean
     x: Int
@@ -54,6 +58,7 @@ const typeDefs = gql`
   }
 
   type SectionNode {
+    _id: ID
     north: Section
     east: Section
     south: Section

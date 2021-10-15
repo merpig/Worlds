@@ -12,12 +12,9 @@ const worldSchema = new Schema({
     },
     privacySetting: {
         type: Number,
-        default: 0,
-        enums: [
-            0,  // Anyone can visit
-            1,  // Friends can visit
-            2,  // No one can visit
-        ]
+        required: true,
+        min: 0,
+        max: 2,
     },
     canVisitOffline: {
         type: Boolean,

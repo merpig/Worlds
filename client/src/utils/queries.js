@@ -24,6 +24,26 @@ export const QUERY_ME = gql`
       _id
       username
       email
+      character {
+        characterType
+        hasHair
+        hairColor
+        shirtColor
+        skinColor
+        pantsColor
+        shoeColor
+      }
+      worlds {
+        name
+        privacySetting
+        canVisitOffline
+        mainSection {
+          _id
+        }
+        players {
+          username
+        }
+      }
     }
   }
 `;

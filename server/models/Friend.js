@@ -5,11 +5,8 @@ const friendsSchema = new Schema({
     receiving: {type: Schema.Types.ObjectId, ref: 'User'},
     status: {
         type: Number,
-        enums: [
-            0,    // pending
-            1,    // friends
-            2,    // blocked
-        ]
+        min: 0,
+        max: 2
     },
     messages: [{
         type: Schema.Types.ObjectId, ref: 'Message'

@@ -3,24 +3,31 @@ const { Schema, model } = require('mongoose');
 const characterSchema = new Schema({
     characterType: {
         type: String,
+        default: "human"
     },
     hasHair: {
-        type: Boolean
+        type: Boolean,
+        default: "true"
     },
     hairColor: {
-        type: String
+        type: String,
+        default: "brown"
     },
-    topColor: {
-        type: String
+    shirtColor: {
+        type: String,
+        default: "blue"
     },
     skinColor: {
-        type: String
+        type: String,
+        default: "white"
     },
     pantsColor: {
-        type: String
+        type: String,
+        default: "black"
     },
     shoeColor: {
-        type: String
+        type: String,
+        default: "black"
     }
   });
 

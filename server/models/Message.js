@@ -6,10 +6,8 @@ const messageSchema = new Schema({
     },
     status: {
         type: Number,
-        enums: [
-            0,    // sent
-            1,    // read
-        ]
+        min: 0,
+        max: 2
     },
 }, {timestamps: true});
 

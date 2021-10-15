@@ -6,7 +6,7 @@ import { useQuery } from '@apollo/client';
 import Auth from '../utils/auth';
 import { QUERY_USERS, QUERY_USER, QUERY_ME } from '../utils/queries';
 // Components
-import UserList from '../components/UserList';
+import UserList from '../components/WorldList';
 
 const Profile = () => {
   const { id } = useParams();
@@ -56,14 +56,23 @@ const Profile = () => {
   const renderCurrentUserInfo = () => {
     if (id) return null;
 
-    console.log(user)
-
     return (
       <ul>
         <li>username: {user.username}</li>
         <li>email: {user.email}</li>
       </ul>
     );
+  }
+
+  const renderCharacterInfo = () => {
+    if (id) return null;
+    if(!user.character){
+      return (
+        <ul>
+          <li>username: {user.username}</li>
+        </ul>
+      );
+    }
   }
 
   return (
@@ -73,6 +82,7 @@ const Profile = () => {
           Viewing {id ? `${user.username}'s` : 'your'} profile.
         </h2>
         {renderCurrentUserInfo()}
+        {renderCharacterInfo()}
         {renderUserList()}
       </div>
     </div>
