@@ -1,7 +1,7 @@
 const { Schema, model } = require('mongoose');
 
 const worldSchema = new Schema({
-    name: {
+    worldname: {
         type: String,
         required: true,
         trim: true,
@@ -11,14 +11,12 @@ const worldSchema = new Schema({
         required: true,
     },
     privacySetting: {
-        type: Number,
+        type: String,
         required: true,
-        min: 0,
-        max: 2,
     },
-    canVisitOffline: {
-        type: Boolean,
-        default: true
+    visitSetting: {
+        type: String,
+        required: true
     },
     mainSection: {
         type: Schema.Types.ObjectId, ref: 'Section'

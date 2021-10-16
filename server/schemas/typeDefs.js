@@ -33,10 +33,10 @@ const typeDefs = gql`
 
   type World {
     _id: ID
-    name: String
+    worldname: String
     ownedBy: User
-    privacySetting: Int
-    canVisitOffline: Boolean
+    privacySetting: String
+    visitSetting: String
     mainSection: Section
     players: [User]
   }
@@ -79,6 +79,7 @@ const typeDefs = gql`
   type Mutation {
     addUser(username: String!, email: String!, password: String!): Auth
     login(email: String!, password: String!): Auth
+    addWorld(id: ID!, worldname: String!, privacySetting: String!, visitSetting: String!): World
   }
 `;
 

@@ -12,7 +12,7 @@ const resolvers = {
     },
     me: async (_, args, context) => {
       if (context.user) {
-        return User.findOne({ _id: context.user._id });
+        return User.findOne({ _id: context.user._id }).populate('worlds');
       }
       throw new AuthenticationError('You need to be logged in!');
     },
@@ -40,6 +40,15 @@ const resolvers = {
       const token = signToken(user);
 
       return { token, user };
+    },
+    addWorld: async (_, {id, worldname, privacySetting, visitSetting}) => {
+      const preworld = await World.create({ownedBy: id, worldname, privacySetting, visitSetting});
+      const sectionNode = await SectionNode.create({});
+      const section = await Section.create({belongsTo: preworld._id, nodes: sectionNode._id});
+      let world = await World.findOneAndUpdate({_id:preworld._id}, {mainSection: section._id});
+      world = await World.findOne({_id:preworld._id})
+      const user = await User.findOneAndUpdate({ _id: id },{$push: {worlds: world._id}});
+      return world;
     }
   }
 };

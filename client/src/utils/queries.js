@@ -34,9 +34,10 @@ export const QUERY_ME = gql`
         shoeColor
       }
       worlds {
-        name
+        _id
+        worldname
         privacySetting
-        canVisitOffline
+        visitSetting
         mainSection {
           _id
         }

@@ -25,3 +25,17 @@ export const ADD_USER = gql`
     }
   }
 `;
+
+export const ADD_WORLD = gql`
+  mutation addWorld($id: ID!, $worldname: String!, $privacySetting: String!, $visitSetting: String!){
+    addWorld(id: $id, worldname: $worldname, privacySetting: $privacySetting, visitSetting: $visitSetting){
+      _id
+      worldname
+      privacySetting
+      visitSetting
+      mainSection {
+        _id
+      }
+    }
+  }
+`;
