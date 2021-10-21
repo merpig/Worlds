@@ -1,4 +1,5 @@
-const { AuthenticationError, ApolloError, PubSub } = require('apollo-server-express');
+const { AuthenticationError, ApolloError } = require('apollo-server-express');
+const { PubSub } = require('graphql-subscriptions');
 const { signToken } = require('../utils/auth');
 const { User, World, Section, Placement, SectionNode, Character, Feature, Friend, Message } = require('../models');
 
@@ -75,11 +76,13 @@ const resolvers = {
           //console.log(alreadyFriends)
           if(!alreadyFriends){
             console.log("creating friends...")
-            const friend = await Friend.create({
+            let friend = await Friend.create({
               requesting: context.user._id, 
               receiving: user._id, 
               status: 0
-            });
+            })
+            friend = await friend.populate('receiving').populate('requesting').execPopulate();
+            console.log(friend)
             pubsub.publish('FRIEND_ADDED', { friendAdded: friend });
             return friend;
           }
@@ -153,13 +156,13 @@ const resolvers = {
 
   Subscription : {
     friendAdded: {
-      resolve: (payload) => {
-        console.log(payload)
-        return payload.newOrder
-      },
+      // resolve: (payload) => {
+      //   console.log(payload)
+      //   return {data: payload}
+      // },
       subscribe: () => {
         console.log("friend added subscribed");
-        return pubsub.asyncIterator(['FRIEND_ADDED'])
+        return pubsub.asyncIterator('FRIEND_ADDED')
       },
     },
     friendUpdated: {

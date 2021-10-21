@@ -103,7 +103,7 @@ const typeDefs = gql`
 
   type Subscription {
     messageSent: Message
-    friendAdded(username: String!): Friend
+    friendAdded: Friend
     friendUpdated: Friend
     friendCanceled: Friend
   }

@@ -15,9 +15,5 @@
   "license": "ISC",
   "devDependencies": {
     "concurrently": "^5.1.0"
-  },
-  "dependencies": {
-    "graphql-redis-subscriptions": "^2.4.0",
-    "ioredis": "^4.28.0"
   }
 }
