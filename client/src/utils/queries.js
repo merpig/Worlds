@@ -48,3 +48,23 @@ export const QUERY_ME = gql`
     }
   }
 `;
+
+export const QUERY_FRIENDS = gql`
+query friends {
+  friends {
+    _id
+    requesting {
+      _id
+      username
+    }
+    receiving {
+      _id
+      username
+    }
+    status
+    messages {
+      message
+    }
+  }
+}
+`;

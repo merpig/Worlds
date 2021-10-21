@@ -21,6 +21,9 @@ const worldSchema = new Schema({
     mainSection: {
         type: Schema.Types.ObjectId, ref: 'Section'
     },
+    sections:[{
+        type: Schema.Types.ObjectId, ref: 'Section'
+    }],
     players: [{
         type: Schema.Types.ObjectId, ref: 'User'
     }]

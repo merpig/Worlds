@@ -38,6 +38,7 @@ const typeDefs = gql`
     privacySetting: String
     visitSetting: String
     mainSection: Section
+    sections: [Section]
     players: [User]
   }
 
@@ -65,6 +66,21 @@ const typeDefs = gql`
     west: Section
   }
 
+  type Message {
+    _id: ID
+    sender: User
+    message: String
+    status: Int
+  }
+
+  type Friend {
+    _id: ID
+    requesting: User
+    receiving: User
+    status: Int
+    messages: [Message]
+  }
+
   type Auth {
     token: ID!
     user: User
@@ -72,14 +88,35 @@ const typeDefs = gql`
 
   type Query {
     users: [User]
+    friends: [Friend]
     user(id: ID!): User
     me: User
   }
 
+  type DeleteWorldResponse {
+    ok: Boolean!
+  }
+
+  type DeleteFriendResponse {
+    ok: Boolean!
+  }
+
+  type Subscription {
+    messageSent: Message
+    friendAdded(username: String!): Friend
+    friendUpdated: Friend
+    friendCanceled: Friend
+  }
+
   type Mutation {
     addUser(username: String!, email: String!, password: String!): Auth
+    addFriend(username: String!): Friend
+    confirmFriend(id: ID!): Friend
+    cancelFriend(id: ID!): DeleteFriendResponse
     login(email: String!, password: String!): Auth
     addWorld(id: ID!, worldname: String!, privacySetting: String!, visitSetting: String!): World
+    editWorld(id: ID!, worldname: String!, privacySetting: String!, visitSetting: String!): World
+    deleteWorld(id: ID!, userId: ID!): DeleteWorldResponse
   }
 `;
 

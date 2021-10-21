@@ -22,6 +22,7 @@ const Login = (props) => {
   // submit form
   const handleFormSubmit = async (event) => {
     event.preventDefault();
+    console.log("Attempting to login");
     try {
       const { data } = await login({
         variables: { ...formState },
@@ -29,7 +30,7 @@ const Login = (props) => {
 
       Auth.login(data.login.token);
     } catch (e) {
-      console.error(e);
+      console.error(error);
     }
 
     // clear form values

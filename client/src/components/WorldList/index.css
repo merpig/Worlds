@@ -1,0 +1,10 @@
+.worldSetting{
+    float: right;
+    color: lightgray;
+    background-color: #1a1a1a;
+    font-size: 1.5rem;
+}
+
+.deleteWorld{
+    float: right;
+}

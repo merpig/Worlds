@@ -4,8 +4,11 @@ import {
   InMemoryCache,
   ApolloProvider,
   createHttpLink,
+  split,
 } from '@apollo/client';
 import { setContext } from '@apollo/client/link/context';
+import { WebSocketLink } from '@apollo/client/link/ws';
+import { getMainDefinition } from '@apollo/client/utilities';
 import { BrowserRouter as Router, Route } from 'react-router-dom';
 
 import Home from './pages/Home';
@@ -19,6 +22,28 @@ import Footer from './components/Footer';
 const httpLink = createHttpLink({
   uri: '/graphql',
 });
+
+const wsLink = new WebSocketLink({
+  uri: 'ws://localhost:3001/graphql',
+  options: {
+    reconnect: true,
+    connectionParams: {
+      authToken: `Bearer ${localStorage.getItem('id_token')||''}`,
+    }
+  }
+});
+
+const splitLink = split(
+  ({ query }) => {
+    const definition = getMainDefinition(query);
+    return (
+      definition.kind === 'OperationDefinition' &&
+      definition.operation === 'subscription'
+    );
+  },
+  wsLink,
+  httpLink,
+);
 
 // Construct request middleware that will attach the JWT token to every request as an `authorization` header
 const authLink = setContext((_, { headers }) => {
@@ -35,7 +60,7 @@ const authLink = setContext((_, { headers }) => {
 
 const client = new ApolloClient({
   // Set up our client to execute the `authLink` middleware prior to making the request to our GraphQL API
-  link: authLink.concat(httpLink),
+  link: authLink.concat(splitLink),
   cache: new InMemoryCache(),
 });
 
