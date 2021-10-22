@@ -97,22 +97,18 @@ const typeDefs = gql`
     ok: Boolean!
   }
 
-  type DeleteFriendResponse {
-    ok: Boolean!
-  }
-
   type Subscription {
     messageSent: Message
-    friendAdded: Friend
-    friendUpdated: Friend
-    friendCanceled: Friend
+    friendAdded(username: String!): Friend
+    friendUpdated(username: String!): Friend
+    friendCanceled(username: String!): Friend
   }
 
   type Mutation {
     addUser(username: String!, email: String!, password: String!): Auth
     addFriend(username: String!): Friend
     confirmFriend(id: ID!): Friend
-    cancelFriend(id: ID!): DeleteFriendResponse
+    cancelFriend(id: ID!): Friend
     login(email: String!, password: String!): Auth
     addWorld(id: ID!, worldname: String!, privacySetting: String!, visitSetting: String!): World
     editWorld(id: ID!, worldname: String!, privacySetting: String!, visitSetting: String!): World

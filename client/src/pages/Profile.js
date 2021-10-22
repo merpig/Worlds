@@ -4,7 +4,7 @@ import { useQuery, useMutation, useSubscription } from '@apollo/client';
 // Utilities
 import { QUERY_FRIENDS, QUERY_ME } from '../utils/queries';
 import { ADD_FRIEND, CONFIRM_FRIEND, CANCEL_FRIEND } from '../utils/mutations';
-import { FRIEND_ADDED } from "../utils/subscriptions";
+import { FRIEND_ADDED, FRIEND_UPDATED, FRIEND_CANCELED } from "../utils/subscriptions";
 // Auth
 import Auth from '../utils/auth';
 
@@ -23,7 +23,6 @@ const AddFriend = ({setShowAddFriend}) => {
       const {data} = await addFriend({
         variables: {username}
       });
-      console.log(data)
     } catch (e) {
       console.log(e)
     }
@@ -86,27 +85,23 @@ const RenderAdded = ({friends,user}) => {
 }
 
 const RenderPending = ({friends,user}) => {
-  console.log(friends);
   const [confirmFriend] = useMutation(CONFIRM_FRIEND);
   const [cancelFriend] = useMutation(CANCEL_FRIEND);
   const pending = friends.filter(friend=>friend.status===0);
   const incoming = pending.filter(friend=>user.username===friend.receiving.username);
   const outgoing = pending.filter(friend=>user.username===friend.requesting.username);
-  console.log(pending);
   if(!pending.length) return <h4>No pending requests.</h4>
 
   const onAccept = async id => {
     const {data} = await confirmFriend({
       variables: {id}
     });
-    console.log(data);
   }
 
   const onCancel = async id => {
     const {data} = await cancelFriend({
       variables: {id}
     });
-    console.log(data);
   }
 
   return (
@@ -162,7 +157,20 @@ const RenderBlocked = ({friends,user}) => {
 
 const RenderFriendList = ({data}) => {
   const { loading: friendsLoading, data: friendsData, error: friendsErr} = useQuery(QUERY_FRIENDS);
-  let { loading: newFriendDataLoading, data: newFriendData} = useSubscription(FRIEND_ADDED);
+  const { loading: newFriendDataLoading, data: newFriendData} = useSubscription(FRIEND_ADDED,
+    {
+      variables: {username: Auth.getProfile().data.username}
+    });
+
+  const { loading: friendUpdatedLoading, data: friendUpdatedData} = useSubscription(FRIEND_UPDATED,
+    {
+      variables: {username: Auth.getProfile().data.username}
+    });
+
+  const { loading: friendCanceledLoading, data: friendCanceledData} = useSubscription(FRIEND_CANCELED,
+    {
+      variables: {username: Auth.getProfile().data.username}
+    });
 
   const [showAddFriend,setShowAddFriend] = useState(false)
   const [status,setStatus] = useState(1);
@@ -171,14 +179,61 @@ const RenderFriendList = ({data}) => {
   useEffect(()=>{
     if(!friendsLoading&&!friends.length)
       setFriends([...friendsData.friends]);
-  },[friendsLoading,friendsData])
+  },[friendsLoading,friendsData]);
 
   useEffect(()=>{
-    if(!newFriendDataLoading){
-      console.log(newFriendData);
+    if(!newFriendDataLoading&&newFriendData){
+      console.log(friends)
       setFriends(friends=>[...friends,newFriendData.friendAdded]);
+    } 
+  },[newFriendData, newFriendDataLoading]);
+
+  useEffect(()=>{ 
+    if(!friendUpdatedLoading){
+      setFriends(friends=>{
+        console.log(friends)
+        let {friendUpdated} = friendUpdatedData;
+        let index = friends.findIndex(friend=>
+          friend.requesting.username===friendUpdated.requesting.username&&
+          friend.receiving.username===friendUpdated.receiving.username
+        )
+        let updatedFriend = friends[index];
+        updatedFriend.status = friendUpdated.status
+        console.log([
+          ...friends.slice(0,index),
+          updatedFriend,
+          ...friends.slice(index+1)
+        ])
+        return [
+          ...friends.slice(0,index),
+          updatedFriend,
+          ...friends.slice(index+1)
+        ]
+      });
     }
-  },[newFriendData, newFriendDataLoading])
+  },[friendUpdatedData, friendUpdatedLoading]);
+
+  useEffect(()=>{ 
+    if(!friendCanceledLoading){
+      console.log(friendCanceledData);
+      setFriends(friends=>{
+        console.log(friendCanceledData)
+        let {friendCanceled} = friendCanceledData;
+        let index = friends.findIndex(friend=>
+          friend.requesting.username===friendCanceled.requesting.username&&
+          friend.receiving.username===friendCanceled.receiving.username
+        )
+        console.log([
+          ...friends.slice(0,index),
+          ...friends.slice(index+1)
+        ])
+        return [
+          ...friends.slice(0,index),
+          ...friends.slice(index+1)
+        ]
+      });
+    }
+  },[friendCanceledData, friendCanceledLoading]);
 
   const renderList = [
     <RenderPending friends={friends} user={data.me}/>,
@@ -226,7 +281,6 @@ const Profile = () => {
 
   const renderCurrentUserInfo = () => {
     if (loading) return null;
-    console.log(data);
     return (
       <ul>
         <li>username: {data.me.username}</li>

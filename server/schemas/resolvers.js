@@ -1,5 +1,5 @@
 const { AuthenticationError, ApolloError } = require('apollo-server-express');
-const { PubSub } = require('graphql-subscriptions');
+const { PubSub, withFilter } = require('graphql-subscriptions');
 const { signToken } = require('../utils/auth');
 const { User, World, Section, Placement, SectionNode, Character, Feature, Friend, Message } = require('../models');
 
@@ -61,6 +61,9 @@ const resolvers = {
     },
     addFriend: async (_, { username }, context) => {
       if (context.user) {
+        if (context.user.username===username) {
+          throw new AddFriendErro('You cannot add yourself!');
+        }
         const user = await User.findOne({username});
         if(user) {
           const alreadyFriends = await Friend.findOne({
@@ -82,7 +85,6 @@ const resolvers = {
               status: 0
             })
             friend = await friend.populate('receiving').populate('requesting').execPopulate();
-            console.log(friend)
             pubsub.publish('FRIEND_ADDED', { friendAdded: friend });
             return friend;
           }
@@ -100,16 +102,18 @@ const resolvers = {
     },
     confirmFriend: async (_, {id},context) => {
       if (context.user) {
-        const friend = await Friend.findByIdAndUpdate({_id:id},{status:1},{new:true});
-        pubsub.publish('FRIEND_UPDATED', {friend});
+        let friend = await Friend.findByIdAndUpdate({_id:id},{status:1},{new:true});
+        friend = await friend.populate('receiving').populate('requesting').execPopulate();
+        pubsub.publish('FRIEND_UPDATED', {friendUpdated: friend});
         return friend;
       }
       throw new AuthenticationError('You need to be logged in!');
     },
     cancelFriend: async (_, {id},context) => {
       if (context.user) {
-        const friend = await Friend.deleteOne({_id:id});
-        pubsub.publish('FRIEND_CANCELED', {friend});
+        let friend = await Friend.findOneAndDelete({_id:id});
+        friend = await friend.populate('receiving').populate('requesting').execPopulate();
+        pubsub.publish('FRIEND_CANCELED', {friendCanceled: friend});
         return friend;
       }
       throw new AuthenticationError('You need to be logged in!');
@@ -156,20 +160,37 @@ const resolvers = {
 
   Subscription : {
     friendAdded: {
-      // resolve: (payload) => {
-      //   console.log(payload)
-      //   return {data: payload}
-      // },
-      subscribe: () => {
-        console.log("friend added subscribed");
-        return pubsub.asyncIterator('FRIEND_ADDED')
-      },
+      subscribe: withFilter(
+        () => pubsub.asyncIterator('FRIEND_ADDED'),
+        ({friendAdded},{username}) => {
+          return (
+            friendAdded.receiving.username===username ||
+            friendAdded.requesting.username===username
+          );
+        }
+      ),
     },
     friendUpdated: {
-      subscribe: () => pubsub.asyncIterator(['FRIEND_UPDATED']),
+      subscribe: withFilter(
+        () => pubsub.asyncIterator('FRIEND_UPDATED'),
+        ({friendUpdated},{username}) => {friendUpdated.requesting.username===username
+          return (
+            friendUpdated.receiving.username===username ||
+            friendUpdated.requesting.username===username
+          );
+        }
+      ),
     },
     friendCanceled: {
-      subscribe: () => pubsub.asyncIterator(['FRIEND_CANCELED']),
+      subscribe: withFilter(
+        () => pubsub.asyncIterator('FRIEND_CANCELED'),
+        ({friendCanceled},{username}) => {
+          return (
+            friendCanceled.receiving.username===username ||
+            friendCanceled.requesting.username===username
+          );
+        }
+      ),
     }
   }
 };

@@ -55,7 +55,7 @@ export const CONFIRM_FRIEND = gql`
 export const CANCEL_FRIEND = gql`
   mutation cancelFriend($id: ID!){
     cancelFriend(id: $id){
-      ok
+      _id
     }
   }
 `;
