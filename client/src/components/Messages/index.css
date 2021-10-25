@@ -130,6 +130,9 @@
 
 .last-message{
     color: grey;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
 }
 
 .from-friend{

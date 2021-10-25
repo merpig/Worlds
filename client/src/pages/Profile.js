@@ -65,7 +65,7 @@ const AddFriend = ({setShowAddFriend}) => {
   )
 }
 
-const RenderAdded = ({friends,user}) => {
+const RenderAdded = ({friends,user,setFromProfile}) => {
   const [cancelFriend] = useMutation(CANCEL_FRIEND);
   const added = friends.filter(friend=>friend.status===1);
   if(!added.length) return <h4 style={{textAlign:"center"}}>No friends added yet.</h4>
@@ -82,6 +82,15 @@ const RenderAdded = ({friends,user}) => {
     }
   }
 
+  const onMessage = (id,friend) => {
+    setFromProfile({
+      showFriend:false,
+      id: id,
+      friend : user.username===friend.requesting.username?friend.receiving.username:friend.requesting.username,
+      show:true
+    })
+  }
+
   return (
     <div className="row">
       {added.map(friend=>
@@ -91,7 +100,7 @@ const RenderAdded = ({friends,user}) => {
             friend.receiving.username:
             friend.requesting.username}
           <div style={{float:"right"}}>
-            <button>Message</button>
+            <button onClick={()=>onMessage(friend._id,friend)}>Message</button>
             <button onClick={()=>onCancel(friend._id)}>Remove</button>
           </div>
         </div>
@@ -182,13 +191,13 @@ const RenderBlocked = ({friends,user}) => {
   )
 }
 
-const RenderFriendList = ({data,friends,friendsLoading}) => {
+const RenderFriendList = ({data,friends,friendsLoading,setFromProfile}) => {
   const [showAddFriend,setShowAddFriend] = useState(false)
   const [status,setStatus] = useState(1);
 
   const renderList = [
     <RenderPending friends={friends} user={data.me}/>,
-    <RenderAdded friends={friends} user={data.me}/>,
+    <RenderAdded friends={friends} user={data.me} setFromProfile={setFromProfile}/>,
     <RenderBlocked friends={friends} user={data.me}/>
   ];
   return (
@@ -212,7 +221,7 @@ const RenderFriendList = ({data,friends,friendsLoading}) => {
   );
 };
 
-const Profile = ({loading,data,error,friends,friendsLoading}) => {
+const Profile = ({loading,data,error,friends,friendsLoading,setFromProfile}) => {
   // const { loading, data, error } = useQuery(QUERY_ME);
   if (error) console.log(error);
   
@@ -258,7 +267,7 @@ const Profile = ({loading,data,error,friends,friendsLoading}) => {
         </h2>
         {renderCurrentUserInfo()}
         {renderCharacterInfo()}
-        <RenderFriendList data={data} friends={friends} friendsLoading={friendsLoading}/>
+        <RenderFriendList data={data} friends={friends} friendsLoading={friendsLoading} setFromProfile={setFromProfile}/>
       </div>
     </div>
   );

@@ -153,25 +153,28 @@ const resolvers = {
     },
     sendMessage: async(_,{id,message},context) => {
       if (context.user) {
-        let newMessage = await Message.create({sender:context.user._id,message,status:1});
-        newMessage = await newMessage.populate('sender').execPopulate();
-        let friend = await Friend.findByIdAndUpdate({_id:id},{$push: {messages: newMessage._id}},{new:true});
-        friend = await friend.populate('receiving').populate('requesting').execPopulate();
-        
-        pubsub.publish('MESSAGE_SENT',{
-          messageSent: {
+        let friend = await Friend.findById({_id:id});
+        if(friend.status===1){
+          let newMessage = await Message.create({sender:context.user._id,message,status:1});
+          newMessage = await newMessage.populate('sender').execPopulate();
+          friend = await Friend.findByIdAndUpdate({_id:id},{$push: {messages: newMessage._id}},{new:true});
+          friend = await friend.populate('receiving').populate('requesting').execPopulate();
+          
+          pubsub.publish('MESSAGE_SENT',{
+            messageSent: {
+              _id: id,
+              message: newMessage
+            },
+            requesting: friend.requesting.username,
+            receiving: friend.receiving.username
+          })
+          
+          return {
             _id: id,
             message: newMessage
-          },
-          requesting: friend.requesting.username,
-          receiving: friend.receiving.username
-        })
-        
-        return {
-          _id: id,
-          message: newMessage
+          }
         }
-
+        throw new FriendError('You must be friends to message this user.');
       }
       throw new AuthenticationError('You need to be logged in!');
     }

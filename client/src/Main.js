@@ -26,6 +26,7 @@ const Main = () => {
 
     const [friends,setFriends]=useState([]);
     const [worlds,setWorlds]=useState([]);
+    const [messageFromProfile,setMessageFromProfile]=useState({});
 
     useEffect(()=>{
         if(!loading&&data)
@@ -118,13 +119,14 @@ const Main = () => {
                 error={error} 
                 friends={friends} 
                 friendsLoading={friendsLoading}
+                setFromProfile={setMessageFromProfile}
                 />
             </Route>
             <Route exact path="/users/:id">
               <Profile />
             </Route>
           </div>
-          {Auth.loggedIn()?<Messages friends={friends} data={data}/>:[]}
+          {Auth.loggedIn()?<Messages friends={friends} data={data} fromProfile={messageFromProfile}/>:[]}
           <Footer />
         </div>
     </Router>);

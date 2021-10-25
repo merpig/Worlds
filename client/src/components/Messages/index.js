@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 import { SEND_MESSAGE } from '../../utils/mutations';
 import { useMutation } from '@apollo/client';
@@ -73,13 +73,20 @@ const FriendsWithMessage = ({setShowMessages,setShowFriends,friends,data,setFrie
     )
 }
 
-const MessagesWithFriend = ({setShowMessages,setShowFriends,friend,setFriend,setId,friends,data,_id}) => {
+const MessagesWithFriend = ({setShowMessages,setShowFriends,friend,setFriend,setId,friends,data,_id,fromProfile}) => {
     const [sendMessage] = useMutation(SEND_MESSAGE)
     const [title,setTitle] = useState(friend.length?friend:'New Message');
     const [search,setSearch] = useState('');
     const [message,setMessage] = useState('');
     const [showSearch,setShowSearch] = useState(friend.length?false:true);
     const [friendId,setFriendId] = useState(_id?_id:'');
+
+    useEffect(()=>{
+        if(fromProfile.show){
+            setTitle(fromProfile.friend);
+            setFriendId(fromProfile.id);
+        }
+    },[fromProfile])
     
     const messages = title==='New Message'?[]:[...friends.filter(f=>{
         return f.requesting.username===title||f.receiving.username===title
@@ -184,16 +191,25 @@ const MessagesWithFriend = ({setShowMessages,setShowFriends,friend,setFriend,set
     )
 }
 
-const Messages = ({friends,data,_friend,_id,_showFriend}) => {
+const Messages = ({friends,data,fromProfile}) => {
     const [showMessages,setShowMessages] = useState(false);
-    const [showFriends,setShowFriends] = useState(_showFriend===undefined?true:false);
-    const [friend,setFriend] = useState(_friend||'');
-    const [id,setId] = useState(_id||'');
+    const [showFriends,setShowFriends] = useState(true);
+    const [friend,setFriend] = useState('');
+    const [id,setId] = useState('');
+
+    useEffect(()=>{
+        if(fromProfile.show){
+            setShowMessages(fromProfile.show)
+            setShowFriends(fromProfile.showFriend)
+            setFriend(fromProfile.friend)
+            setId(fromProfile.id)
+        }
+    },[fromProfile])
 
     return (
         showMessages?
             <div className="message-container">
-                {showFriends?
+                {(showFriends)?
                     <FriendsWithMessage
                         setShowMessages={setShowMessages}
                         setShowFriends={setShowFriends}
@@ -211,6 +227,7 @@ const Messages = ({friends,data,_friend,_id,_showFriend}) => {
                         friends={friends}
                         data={data}
                         _id={id}
+                        fromProfile={fromProfile}
                     />}
             </div>:
             <MessagesButton setShowMessages={setShowMessages}/>
