@@ -72,16 +72,14 @@ const resolvers = {
               ]}
             ]
           });
-          //console.log(alreadyFriends)
           if(!alreadyFriends){
-            //console.log("creating friends...")
             let friend = await Friend.create({
               requesting: context.user._id, 
               receiving: user._id, 
               status: 0
             })
             friend = await friend.populate('receiving').populate('requesting').execPopulate();
-            pubsub.publish('FRIEND_ADDED', { friendAdded: friend, username: context.user.username});
+            pubsub.publish('FRIEND_ADDED', { friendAdded: friend});
             return friend;
           }
           else if(alreadyFriends.status===0){
@@ -100,7 +98,7 @@ const resolvers = {
       if (context.user) {
         let friend = await Friend.findByIdAndUpdate({_id:id},{status:1},{new:true});
         friend = await friend.populate('receiving').populate('requesting').execPopulate();
-        pubsub.publish('FRIEND_UPDATED', {friendUpdated: friend, username: context.user.username});
+        pubsub.publish('FRIEND_UPDATED', {friendUpdated: friend});
         return friend;
       }
       throw new AuthenticationError('You need to be logged in!');
@@ -110,7 +108,7 @@ const resolvers = {
         let friend = await Friend.findOneAndDelete({_id:id});
         if(!friend) throw new FriendError('Friend already removed.');
         friend = await friend.populate('receiving').populate('requesting').execPopulate();
-        pubsub.publish('FRIEND_CANCELED', {friendCanceled: friend, username: context.user.username});
+        pubsub.publish('FRIEND_CANCELED', {friendCanceled: friend});
         return friend;
       }
       throw new AuthenticationError('You need to be logged in!');
@@ -154,13 +152,12 @@ const resolvers = {
       return world;
     },
     sendMessage: async(_,{id,message},context) => {
-      //console.log("we made it")
       if (context.user) {
         let newMessage = await Message.create({sender:context.user._id,message,status:1});
         newMessage = await newMessage.populate('sender').execPopulate();
         let friend = await Friend.findByIdAndUpdate({_id:id},{$push: {messages: newMessage._id}},{new:true});
         friend = await friend.populate('receiving').populate('requesting').execPopulate();
-        //console.log(context.user,friend)
+        
         pubsub.publish('MESSAGE_SENT',{
           messageSent: {
             _id: id,
@@ -169,11 +166,12 @@ const resolvers = {
           requesting: friend.requesting.username,
           receiving: friend.receiving.username
         })
-        //console.log(newMessage)
+        
         return {
           _id: id,
           message: newMessage
         }
+
       }
       throw new AuthenticationError('You need to be logged in!');
     }
@@ -183,10 +181,14 @@ const resolvers = {
     friendAdded: {
       subscribe: withFilter(
         () => pubsub.asyncIterator('FRIEND_ADDED'),
-        ({friendAdded, username}) => {
+        ({friendAdded},_,context) => {
+          console.log(
+            friendAdded.receiving.username===context.username ||
+            friendAdded.requesting.username===context.username
+          )
           return (
-            friendAdded.receiving.username===username ||
-            friendAdded.requesting.username===username
+            friendAdded.receiving.username===context.username ||
+            friendAdded.requesting.username===context.username
           );
         }
       ),
@@ -194,10 +196,10 @@ const resolvers = {
     friendUpdated: {
       subscribe: withFilter(
         () => pubsub.asyncIterator('FRIEND_UPDATED'),
-        ({friendUpdated, username}) => {
+        ({friendUpdated},_,context) => {
           return (
-            friendUpdated.receiving.username===username ||
-            friendUpdated.requesting.username===username
+            friendUpdated.receiving.username===context.username ||
+            friendUpdated.requesting.username===context.username
           );
         }
       ),
@@ -205,10 +207,10 @@ const resolvers = {
     friendCanceled: {
       subscribe: withFilter(
         () => pubsub.asyncIterator('FRIEND_CANCELED'),
-        ({friendCanceled, username}) => {
+        ({friendCanceled},_,context) => {
           return (
-            friendCanceled.receiving.username===username ||
-            friendCanceled.requesting.username===username
+            friendCanceled.receiving.username===context.username ||
+            friendCanceled.requesting.username===context.username
           );
         }
       ),
@@ -216,8 +218,7 @@ const resolvers = {
     messageSent: {
       subscribe: withFilter(
         () => pubsub.asyncIterator('MESSAGE_SENT'),
-        ({requesting, receiving, username},variables,context) => {
-          console.log(variables,context)
+        ({requesting, receiving},_,context) => {
           return (
             receiving===context.username ||
             requesting===context.username

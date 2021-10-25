@@ -95,10 +95,11 @@ const MessagesWithFriend = ({setShowMessages,setShowFriends,friend,setFriend,set
         e.preventDefault();
         if(!message.length) return;
         try {
-            const { data } = await sendMessage({
+            //const { data } = 
+            await sendMessage({
                 variables: {id: friendId,message}
             })
-            console.log(data);
+            //console.log(data);
             setMessage('');
         } catch(e){
             console.log(e.message)

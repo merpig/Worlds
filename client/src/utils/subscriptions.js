@@ -58,6 +58,7 @@ export const MESSAGE_SENT = gql`
         }
         message
         status
+        createdAt
       }
     }
   }
