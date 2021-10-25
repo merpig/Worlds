@@ -98,3 +98,20 @@ export const EDIT_WORLD =gql`
     }
   }
 `;
+
+export const SEND_MESSAGE = gql`
+  mutation sendMessage($id: ID!, $message: String!){
+    sendMessage(id: $id, message: $message){
+      _id
+      message {
+        _id
+        sender {
+          username
+        }
+        message
+        status
+        createdAt
+      }
+    }
+  }
+`;

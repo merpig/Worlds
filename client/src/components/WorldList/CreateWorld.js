@@ -1,5 +1,4 @@
 import React, {useState} from 'react';
-import { Link } from 'react-router-dom';
 import Auth from '../../utils/auth';
 import { useMutation } from '@apollo/client';
 import { ADD_WORLD, EDIT_WORLD } from '../../utils/mutations';

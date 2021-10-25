@@ -1,13 +1,12 @@
 import React, {useState} from 'react';
-import { Link } from 'react-router-dom';
 import Auth from '../../utils/auth';
 import { DELETE_WORLD } from '../../utils/mutations';
 import { useMutation } from '@apollo/client';
 import CreateWorld from "./CreateWorld";
 import "./index.css";
 
-const WorldCard = ({ _id, worldname, privacySetting, visitSetting, mainSection, players, setWorlds, storedWorlds }) => {
-    const [deleteWorld, { error, data }] = useMutation(DELETE_WORLD);
+const WorldCard = ({ _id, worldname, privacySetting, visitSetting, players, setWorlds, worlds }) => {
+    const [deleteWorld] = useMutation(DELETE_WORLD);
     const [createWorld,showCreateWorld] = useState(false);
     const worldData = {_id,worldname,privacySetting,visitSetting};
 
@@ -17,7 +16,7 @@ const WorldCard = ({ _id, worldname, privacySetting, visitSetting, mainSection, 
       })
   
       if(response.data.deleteWorld.ok){
-        setWorlds(storedWorlds.filter(world=>world._id!==id));
+        setWorlds(worlds.filter(world=>world._id!==id));
       }
     };
   
@@ -35,7 +34,7 @@ const WorldCard = ({ _id, worldname, privacySetting, visitSetting, mainSection, 
           <button className="worldSetting" onClick={onEditWorld}><i className="fa fa-gear"></i></button>
         </h4>
         {createWorld?
-        <CreateWorld showCreateWorld={showCreateWorld} worlds={storedWorlds} setWorlds={setWorlds} edit={true} worldData={worldData}/>:
+        <CreateWorld showCreateWorld={showCreateWorld} worlds={worlds} setWorlds={setWorlds} edit={true} worldData={worldData}/>:
         <div>
             <div> {privacySetting} can visit when you're {visitSetting}.</div>
             <div> There are currently {players.length} players in this world. </div>

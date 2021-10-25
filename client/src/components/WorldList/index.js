@@ -5,20 +5,19 @@ import CreateWorld from "./CreateWorld";
 
 
 
-const WorldList = ({ worlds,title }) => {
+const WorldList = ({ worlds,setWorlds,title }) => {
   const [createWorld,showCreateWorld] = useState(false);
-  const [storedWorlds,setWorlds] = useState(worlds);
 
   const renderWorlds = () => {
-    if (!storedWorlds.length) return <h4>No Worlds created yet</h4>;
-    return storedWorlds.map(world => <WorldCard key={world._id} {...world} setWorlds={setWorlds} storedWorlds={storedWorlds} />);
+    if (!worlds.length) return <h4>No Worlds created yet</h4>;
+    return worlds.map(world => <WorldCard key={world._id} {...world} setWorlds={setWorlds} worlds={worlds} />);
   }
 
   return (
     <>
       <h3>{title}</h3>
       {createWorld?
-        <CreateWorld showCreateWorld={showCreateWorld} worlds={storedWorlds} setWorlds={setWorlds}/>:
+        <CreateWorld showCreateWorld={showCreateWorld} worlds={worlds} setWorlds={setWorlds}/>:
         <button onClick={()=>showCreateWorld(true)}>Create World</button>
       }
       <hr></hr>

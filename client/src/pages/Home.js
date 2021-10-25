@@ -1,16 +1,11 @@
 // Node Modules
-import React, {useState} from 'react';
-import { useQuery } from '@apollo/client';
+import React from 'react';
 // Utilities
 import Auth from '../utils/auth';
-import { QUERY_ME } from '../utils/queries';
 // Components
 import WorldList from '../components/WorldList';
 
-const Home = () => {
-  const { loading, data } = useQuery(QUERY_ME);
-  const worlds = data?.me.worlds || [];
-
+const Home = ({worlds,setWorlds,loading,data}) => {
   const renderUserList = () => {
     if (loading) {
       return <h2>Loading...</h2>
@@ -19,7 +14,7 @@ const Home = () => {
       return;
     }
     else {
-      return <WorldList worlds={worlds} title="List of Worlds" />
+      return <WorldList worlds={worlds} setWorlds={setWorlds} title="List of Worlds" />
     } 
   }
 

@@ -63,7 +63,13 @@ query friends {
     }
     status
     messages {
+      _id
+      sender {
+        username
+      }
       message
+      status
+      createdAt
     }
   }
 }

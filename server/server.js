@@ -9,6 +9,9 @@ const { typeDefs, resolvers } = require('./schemas');
 const { authMiddleware } = require('./utils/auth');
 const db = require('./config/connection');
 const PORT = process.env.PORT || 3001;
+const jwt = require('jsonwebtoken');
+const secret = 'mysecretssshhhhhhh'; // TODO: move to .env
+const expiration = '2h';
 
 //(async function(){
 
@@ -33,10 +36,20 @@ const PORT = process.env.PORT || 3001;
   
   const subscriptionServer = SubscriptionServer.create({
     schema,
+    context: authMiddleware,
     execute,
     subscribe,
-    onConnect() {
+    onConnect(connectionParams) {
       console.log("connected");
+      const token = connectionParams.authToken.split(' ').pop().trim();
+      if(token){
+        try {
+          const { data } = jwt.verify(token, secret, { maxAge: expiration });
+          return data
+        } catch {
+          console.log('Invalid token');
+        }
+      }
     }
   }, {
     server: httpServer,

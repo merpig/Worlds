@@ -1,8 +1,8 @@
 import { gql } from '@apollo/client';
 
 export const FRIEND_ADDED = gql`
-  subscription friendAdded($username: String!) {
-    friendAdded(username: $username) {
+  subscription friendAdded{
+    friendAdded{
       _id
       receiving {
           _id
@@ -21,8 +21,8 @@ export const FRIEND_ADDED = gql`
 `
 
 export const FRIEND_UPDATED = gql`
-  subscription friendUpdated($username: String!) {
-    friendUpdated(username: $username) {
+  subscription friendUpdated{
+    friendUpdated{
       receiving {
           username
       }
@@ -35,13 +35,29 @@ export const FRIEND_UPDATED = gql`
 `
 
 export const FRIEND_CANCELED = gql`
-  subscription friendCanceled($username: String!) {
-    friendCanceled(username: $username) {
+  subscription friendCanceled{
+    friendCanceled{
       receiving {
           username
       }
       requesting {
           username
+      }
+    }
+  }
+`;
+
+export const MESSAGE_SENT = gql`
+  subscription messageSent{
+    messageSent{
+      _id
+      message {
+        _id
+        sender {
+            username
+        }
+        message
+        status
       }
     }
   }

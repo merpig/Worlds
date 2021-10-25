@@ -1,30 +1,38 @@
 // Node Modules
-import React, {useState,useEffect} from 'react';
-import { useQuery, useMutation, useSubscription } from '@apollo/client';
+import React, { useState } from 'react';
+import { useMutation } from '@apollo/client';
 // Utilities
-import { QUERY_FRIENDS, QUERY_ME } from '../utils/queries';
 import { ADD_FRIEND, CONFIRM_FRIEND, CANCEL_FRIEND } from '../utils/mutations';
-import { FRIEND_ADDED, FRIEND_UPDATED, FRIEND_CANCELED } from "../utils/subscriptions";
 // Auth
 import Auth from '../utils/auth';
 
 const AddFriend = ({setShowAddFriend}) => {
   const [username,setUsername] = useState('');
   const [addFriend] = useMutation(ADD_FRIEND);
+  const [requestStatus,setRequestStatus] = useState({
+    success: false,
+    message: ''
+  })
 
   const handleChange = (event) => {
     setUsername(event.target.value);
   };
 
   const handleFormSubmit = async (event) => {
-    console.log('Adding friend: ', username);
     event.preventDefault();
     try {
       const {data} = await addFriend({
         variables: {username}
       });
+      setRequestStatus({
+        success: true,
+        message: `Added ${data.addFriend.receiving.username}!`
+      })
     } catch (e) {
-      console.log(e)
+      setRequestStatus({
+        success: false,
+        message: e.message
+      })
     }
   }
 
@@ -35,7 +43,11 @@ const AddFriend = ({setShowAddFriend}) => {
   }
 
   return (
-    <div className="col-12 mb-5">
+    <div className="col-12 mb-3 mt-3">
+      <div className="bg-light p-3" style={{borderRadius: ".25rem"}}>
+      {requestStatus.message.length?
+      <p style={{color: requestStatus.success?'green':'red'}}>{requestStatus.message}</p>
+      :[]}
       <form onSubmit={handleFormSubmit}>
         <input
           className="form-input"
@@ -48,6 +60,7 @@ const AddFriend = ({setShowAddFriend}) => {
         <button type='submit'>Add User</button>
         <button onClick={handleFormCancel}>Cancel</button>
       </form>
+      </div>
     </div>
   )
 }
@@ -55,14 +68,18 @@ const AddFriend = ({setShowAddFriend}) => {
 const RenderAdded = ({friends,user}) => {
   const [cancelFriend] = useMutation(CANCEL_FRIEND);
   const added = friends.filter(friend=>friend.status===1);
-  if(!added.length) return <h4>No friends added yet.</h4>
+  if(!added.length) return <h4 style={{textAlign:"center"}}>No friends added yet.</h4>
 
 
   const onCancel = async id => {
-    const {data} = await cancelFriend({
-      variables: {id}
-    });
-    console.log(data);
+    try{
+      //const {data} =
+      await cancelFriend({
+        variables: {id}
+      });
+    } catch(e){
+      console.log(e.message)
+    }
   }
 
   return (
@@ -90,18 +107,28 @@ const RenderPending = ({friends,user}) => {
   const pending = friends.filter(friend=>friend.status===0);
   const incoming = pending.filter(friend=>user.username===friend.receiving.username);
   const outgoing = pending.filter(friend=>user.username===friend.requesting.username);
-  if(!pending.length) return <h4>No pending requests.</h4>
+  if(!pending.length) return <h4 style={{textAlign:"center"}}>No pending requests.</h4>
 
   const onAccept = async id => {
-    const {data} = await confirmFriend({
-      variables: {id}
-    });
+    try {
+      //const {data} = 
+      await confirmFriend({
+        variables: {id}
+      });
+    } catch (e){
+      console.log(e.message)
+    }
   }
 
   const onCancel = async id => {
-    const {data} = await cancelFriend({
-      variables: {id}
-    });
+    try{
+      //const {data} = 
+      await cancelFriend({
+        variables: {id}
+      });
+    } catch (e){
+      console.log(e.message)
+    }
   }
 
   return (
@@ -143,7 +170,7 @@ const RenderPending = ({friends,user}) => {
 
 const RenderBlocked = ({friends,user}) => {
   const blocked = friends.filter(friend=>friend.status===2);
-  if(!blocked.length) return <h4>No blocked users.</h4>
+  if(!blocked.length) return <h4 style={{textAlign:"center"}}>No blocked users.</h4>
   return (
     <div className="row">
       {blocked.map(friend=><div className="col-12">
@@ -155,85 +182,9 @@ const RenderBlocked = ({friends,user}) => {
   )
 }
 
-const RenderFriendList = ({data}) => {
-  const { loading: friendsLoading, data: friendsData, error: friendsErr} = useQuery(QUERY_FRIENDS);
-  const { loading: newFriendDataLoading, data: newFriendData} = useSubscription(FRIEND_ADDED,
-    {
-      variables: {username: Auth.getProfile().data.username}
-    });
-
-  const { loading: friendUpdatedLoading, data: friendUpdatedData} = useSubscription(FRIEND_UPDATED,
-    {
-      variables: {username: Auth.getProfile().data.username}
-    });
-
-  const { loading: friendCanceledLoading, data: friendCanceledData} = useSubscription(FRIEND_CANCELED,
-    {
-      variables: {username: Auth.getProfile().data.username}
-    });
-
+const RenderFriendList = ({data,friends,friendsLoading}) => {
   const [showAddFriend,setShowAddFriend] = useState(false)
   const [status,setStatus] = useState(1);
-  const [friends,setFriends]=useState([]);
-
-  useEffect(()=>{
-    if(!friendsLoading&&!friends.length)
-      setFriends([...friendsData.friends]);
-  },[friendsLoading,friendsData]);
-
-  useEffect(()=>{
-    if(!newFriendDataLoading&&newFriendData){
-      console.log(friends)
-      setFriends(friends=>[...friends,newFriendData.friendAdded]);
-    } 
-  },[newFriendData, newFriendDataLoading]);
-
-  useEffect(()=>{ 
-    if(!friendUpdatedLoading){
-      setFriends(friends=>{
-        console.log(friends)
-        let {friendUpdated} = friendUpdatedData;
-        let index = friends.findIndex(friend=>
-          friend.requesting.username===friendUpdated.requesting.username&&
-          friend.receiving.username===friendUpdated.receiving.username
-        )
-        let updatedFriend = friends[index];
-        updatedFriend.status = friendUpdated.status
-        console.log([
-          ...friends.slice(0,index),
-          updatedFriend,
-          ...friends.slice(index+1)
-        ])
-        return [
-          ...friends.slice(0,index),
-          updatedFriend,
-          ...friends.slice(index+1)
-        ]
-      });
-    }
-  },[friendUpdatedData, friendUpdatedLoading]);
-
-  useEffect(()=>{ 
-    if(!friendCanceledLoading){
-      console.log(friendCanceledData);
-      setFriends(friends=>{
-        console.log(friendCanceledData)
-        let {friendCanceled} = friendCanceledData;
-        let index = friends.findIndex(friend=>
-          friend.requesting.username===friendCanceled.requesting.username&&
-          friend.receiving.username===friendCanceled.receiving.username
-        )
-        console.log([
-          ...friends.slice(0,index),
-          ...friends.slice(index+1)
-        ])
-        return [
-          ...friends.slice(0,index),
-          ...friends.slice(index+1)
-        ]
-      });
-    }
-  },[friendCanceledData, friendCanceledLoading]);
 
   const renderList = [
     <RenderPending friends={friends} user={data.me}/>,
@@ -241,29 +192,28 @@ const RenderFriendList = ({data}) => {
     <RenderBlocked friends={friends} user={data.me}/>
   ];
   return (
-    <div style={{border:"2px dotted black"}}>
-      <h3 className="col-12 bg-dark text-light p-3 mb-5" style={{fontSize:"1rem"}}>
+    <div className="col-md-4 col-sm-8" style={{border:"2px dotted black",padding: "0"}}>
+      <h3 className="bg-dark text-light p-3 mb-0" style={{fontSize:"1rem"}}>
         Friends List:
         <button className="addFriend" onClick={()=>setShowAddFriend(!showAddFriend)} style={{fontSize: "1rem", float:"right"}}><i className="fa fa-plus"></i>Add</button>
       </h3>
       {showAddFriend?<AddFriend setShowAddFriend={setShowAddFriend}/>:[]}
-      <div className="row" style={{padding:"4px"}}>
-        <div className="col-4" style={{textAlign:"center"}}><button onClick={()=>setStatus(1)}>Friends</button></div>
-        <div className="col-4" style={{textAlign:"center"}}><button onClick={()=>setStatus(0)}>Pending</button></div>
-        <div className="col-4" style={{textAlign:"center"}}><button onClick={()=>setStatus(2)}>Blocked</button></div>
+      <div className="flex-row">
+        <div className="col-4" style={{textAlign:"center",padding:"0"}}><button onClick={()=>status===1?{}:setStatus(1)} style={{width:"100%",height:"40px"}}>Friends</button></div>
+        <div className="col-4" style={{textAlign:"center",padding:"0"}}><button onClick={()=>status===0?{}:setStatus(0)} style={{width:"100%",height:"40px"}}>Pending</button></div>
+        <div className="col-4" style={{textAlign:"center",padding:"0"}}><button onClick={()=>status===2?{}:setStatus(2)} style={{width:"100%",height:"40px"}}>Blocked</button></div>
       </div>
-      <hr></hr>
-      {friendsLoading? <h4>Loading...</h4>:renderList[status]}
+      <div style={{minHeight: "100px"}}>
+
+        {friendsLoading||friends===undefined? <h4>Loading...</h4>:renderList[status]}
+      </div>
 
     </div>
   );
 };
 
-const Profile = () => {
-  const { loading, data, error } = useQuery(QUERY_ME);
-  
-
-  
+const Profile = ({loading,data,error,friends,friendsLoading}) => {
+  // const { loading, data, error } = useQuery(QUERY_ME);
   if (error) console.log(error);
   
   if (loading) {
@@ -308,7 +258,7 @@ const Profile = () => {
         </h2>
         {renderCurrentUserInfo()}
         {renderCharacterInfo()}
-        <RenderFriendList data={data}/>
+        <RenderFriendList data={data} friends={friends} friendsLoading={friendsLoading}/>
       </div>
     </div>
   );

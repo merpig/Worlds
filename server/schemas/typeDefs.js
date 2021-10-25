@@ -12,6 +12,7 @@ const typeDefs = gql`
     locations: [Placement]
   }
 
+
   type Character {
     _id: ID
     characterType: String
@@ -71,6 +72,12 @@ const typeDefs = gql`
     sender: User
     message: String
     status: Int
+    createdAt: String
+  }
+
+  type newMessage {
+    _id: ID
+    message: Message
   }
 
   type Friend {
@@ -98,10 +105,10 @@ const typeDefs = gql`
   }
 
   type Subscription {
-    messageSent: Message
-    friendAdded(username: String!): Friend
-    friendUpdated(username: String!): Friend
-    friendCanceled(username: String!): Friend
+    messageSent: newMessage
+    friendAdded: Friend
+    friendUpdated: Friend
+    friendCanceled: Friend
   }
 
   type Mutation {
@@ -109,6 +116,7 @@ const typeDefs = gql`
     addFriend(username: String!): Friend
     confirmFriend(id: ID!): Friend
     cancelFriend(id: ID!): Friend
+    sendMessage(id: ID!,message: String!): newMessage
     login(email: String!, password: String!): Auth
     addWorld(id: ID!, worldname: String!, privacySetting: String!, visitSetting: String!): World
     editWorld(id: ID!, worldname: String!, privacySetting: String!, visitSetting: String!): World
