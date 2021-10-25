@@ -108,6 +108,9 @@ const resolvers = {
         let friend = await Friend.findOneAndDelete({_id:id});
         if(!friend) throw new FriendError('Friend already removed.');
         friend = await friend.populate('receiving').populate('requesting').execPopulate();
+        friend.messages.forEach( async message=>{
+          await Message.findByIdAndDelete({_id:message._id})
+        });
         pubsub.publish('FRIEND_CANCELED', {friendCanceled: friend});
         return friend;
       }
@@ -154,7 +157,7 @@ const resolvers = {
     sendMessage: async(_,{id,message},context) => {
       if (context.user) {
         let friend = await Friend.findById({_id:id});
-        if(friend.status===1){
+        if(friend && friend.status===1){
           let newMessage = await Message.create({sender:context.user._id,message,status:1});
           newMessage = await newMessage.populate('sender').execPopulate();
           friend = await Friend.findByIdAndUpdate({_id:id},{$push: {messages: newMessage._id}},{new:true});

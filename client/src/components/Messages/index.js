@@ -80,6 +80,7 @@ const MessagesWithFriend = ({setShowMessages,setShowFriends,friend,setFriend,set
     const [message,setMessage] = useState('');
     const [showSearch,setShowSearch] = useState(friend.length?false:true);
     const [friendId,setFriendId] = useState(_id?_id:'');
+    const [errorMsg,setErrorMsg] = useState('')
 
     useEffect(()=>{
         if(fromProfile.show){
@@ -87,10 +88,16 @@ const MessagesWithFriend = ({setShowMessages,setShowFriends,friend,setFriend,set
             setFriendId(fromProfile.id);
         }
     },[fromProfile])
-    
-    const messages = title==='New Message'?[]:[...friends.filter(f=>{
+
+    const [filteredFriend] = friends.filter(f=>{
         return f.requesting.username===title||f.receiving.username===title
-    })[0].messages].reverse();
+    })
+
+    if(title!=='New Message'&&!filteredFriend) {
+        return <>{setShowFriends(true)}</>;
+    }
+    
+    const messages = title==='New Message'?[]:[...filteredFriend?.messages||[]].reverse();
 
     const handleFriendClick = ({id,username}) => {
         setTitle(username);
@@ -110,6 +117,7 @@ const MessagesWithFriend = ({setShowMessages,setShowFriends,friend,setFriend,set
             setMessage('');
         } catch(e){
             console.log(e.message)
+            setErrorMsg(e.message);
         }
     }
 
@@ -151,6 +159,7 @@ const MessagesWithFriend = ({setShowMessages,setShowFriends,friend,setFriend,set
             <div className="row">
                 <div className="col-12">
                     <div className="messages p-2">
+                        {errorMsg?errorMsg:""}
                         {
                             messages.map(m=>m.sender.username===title?
                                 <div key={m._id} className="row mb-1">
