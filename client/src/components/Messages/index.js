@@ -73,7 +73,7 @@ const FriendsWithMessage = ({setShowMessages,setShowFriends,friends,data,setFrie
     )
 }
 
-const MessagesWithFriend = ({setShowMessages,setShowFriends,friend,setFriend,setId,friends,data,_id,fromProfile}) => {
+const MessagesWithFriend = ({setShowMessages,setShowFriends,friend,setFriend,friends,data,_id,fromProfile,setFriends}) => {
     const [sendMessage] = useMutation(SEND_MESSAGE)
     const [title,setTitle] = useState(friend.length?friend:'New Message');
     const [search,setSearch] = useState('');
@@ -81,6 +81,7 @@ const MessagesWithFriend = ({setShowMessages,setShowFriends,friend,setFriend,set
     const [showSearch,setShowSearch] = useState(friend.length?false:true);
     const [friendId,setFriendId] = useState(_id?_id:'');
     const [errorMsg,setErrorMsg] = useState('')
+    const [newMsg,setNewMsg]=useState(null);
 
     useEffect(()=>{
         if(fromProfile.show){
@@ -93,11 +94,10 @@ const MessagesWithFriend = ({setShowMessages,setShowFriends,friend,setFriend,set
         return f.requesting.username===title||f.receiving.username===title
     })
 
+    let messages = title==='New Message'?[]:[...filteredFriend?.messages||[]].reverse();
     if(title!=='New Message'&&!filteredFriend) {
         return <>{setShowFriends(true)}</>;
     }
-    
-    const messages = title==='New Message'?[]:[...filteredFriend?.messages||[]].reverse();
 
     const handleFriendClick = ({id,username}) => {
         setTitle(username);
@@ -108,12 +108,28 @@ const MessagesWithFriend = ({setShowMessages,setShowFriends,friend,setFriend,set
     const handleSendMessage = async (e) => {
         e.preventDefault();
         if(!message.length) return;
+        let index = friends.findIndex(f=>f._id===friendId);
+        let updatedFriend = {...friends[index]}
+        updatedFriend.messages = [
+            ...updatedFriend.messages,
+            {
+                message,
+                sender: {
+                    username: data.me.username
+                },
+                status: 0,
+                _id: updatedFriend.messages.length
+            }
+        ];
+        setFriends([
+            ...friends.slice(0,index),
+            updatedFriend,
+            ...friends.slice(index+1)
+        ]);
         try {
-            //const { data } = 
             await sendMessage({
                 variables: {id: friendId,message}
-            })
-            //console.log(data);
+            });
             setMessage('');
         } catch(e){
             console.log(e.message)
@@ -159,7 +175,6 @@ const MessagesWithFriend = ({setShowMessages,setShowFriends,friend,setFriend,set
             <div className="row">
                 <div className="col-12">
                     <div className="messages p-2">
-                        {errorMsg?errorMsg:""}
                         {
                             messages.map(m=>m.sender.username===title?
                                 <div key={m._id} className="row mb-1">
@@ -173,11 +188,12 @@ const MessagesWithFriend = ({setShowMessages,setShowFriends,friend,setFriend,set
                                     <div className="col-4">
                                     </div>
                                     <div className="col-8">
-                                        <div className="from-me">{m.message}</div>
+                                        <div className={`from-me status-${m.status}`}>{m.message}</div>
                                     </div>
                                 </div>
                             )
                         }
+                        {errorMsg?errorMsg:""}
                     </div>
                 </div>
             </div>}
@@ -200,7 +216,7 @@ const MessagesWithFriend = ({setShowMessages,setShowFriends,friend,setFriend,set
     )
 }
 
-const Messages = ({friends,data,fromProfile}) => {
+const Messages = ({friends,data,fromProfile,setFriends}) => {
     const [showMessages,setShowMessages] = useState(false);
     const [showFriends,setShowFriends] = useState(true);
     const [friend,setFriend] = useState('');
@@ -237,6 +253,7 @@ const Messages = ({friends,data,fromProfile}) => {
                         data={data}
                         _id={id}
                         fromProfile={fromProfile}
+                        setFriends={setFriends}
                     />}
             </div>:
             <MessagesButton setShowMessages={setShowMessages}/>

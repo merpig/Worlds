@@ -152,3 +152,8 @@
     float: right;
     overflow-wrap:break-word;
 }
+
+.status-0{
+    background-color: rgb(240, 240, 240);
+    color: grey;
+}

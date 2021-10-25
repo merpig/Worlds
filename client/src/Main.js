@@ -31,7 +31,7 @@ const Main = () => {
     useEffect(()=>{
         if(!loading&&data)
             setWorlds([...data.me.worlds]);
-    },[loading,data])
+    },[loading,data]);
 
     useEffect(()=>{
         if(!friendsLoading&&friendsData)
@@ -43,7 +43,19 @@ const Main = () => {
             setFriends(friends=>{
                 let index = friends.findIndex(e=>e._id===messageData.messageSent._id);
                 let updatedFriend = {...friends[index]};
-                updatedFriend.messages= [...updatedFriend.messages,messageData.messageSent.message];
+                let messageIndex = 0;
+                for(let i = updatedFriend.messages.length-1; i>=0;i--){
+                  if(updatedFriend.messages[i].message === messageData.messageSent.message.message &&
+                    updatedFriend.messages[i].sender.username===messageData.messageSent.message.sender.username&&
+                    updatedFriend.messages[i].status===0){
+                      messageIndex = i;
+                    }
+                }
+                updatedFriend.messages= [
+                  ...updatedFriend.messages.slice(0,messageIndex),
+                  messageData.messageSent.message,
+                  ...updatedFriend.messages.slice(messageIndex+1)
+                ];
                 return [
                 ...friends.slice(0,index),
                 updatedFriend,
@@ -51,7 +63,7 @@ const Main = () => {
                 ]
             });
         }
-    },[messageLoading,messageData])
+    },[messageLoading,messageData]);
 
     useEffect(()=>{
         if(!newFriendDataLoading&&newFriendData){
@@ -126,7 +138,7 @@ const Main = () => {
               <Profile />
             </Route>
           </div>
-          {Auth.loggedIn()?<Messages friends={friends} data={data} fromProfile={messageFromProfile}/>:[]}
+          {Auth.loggedIn()?<Messages friends={friends} data={data} fromProfile={messageFromProfile} setFriends={setFriends}/>:[]}
           <Footer />
         </div>
     </Router>);
