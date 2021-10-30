@@ -4,11 +4,21 @@ import { useQuery } from '@apollo/client';
 
 import Auth from '../utils/auth';
 
-const World = () => {
+const Users = () => {
     const { id } = useParams();
 
     if(!Auth.loggedIn()) return <Redirect to="/login" />
 
+    console.log(id)
+    if( !id ) {
+        return (
+            <form>
+                <input className="form-input" placeholder="Search for a user">
+                </input>
+            </form>
+        )
+    }
+    
     return (
         <div>
             
@@ -16,4 +26,4 @@ const World = () => {
     )
 }
 
-export default World;
+export default Users;

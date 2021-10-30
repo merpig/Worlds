@@ -117,7 +117,7 @@ const resolvers = {
       throw new AuthenticationError('You need to be logged in!');
     },
     login: async (_, { email, password }) => {
-      const user = await User.findOne({ email });
+      let user = await User.findOne({ email });
 
       if (!user) {
         throw new AuthenticationError('No user found with this email address');
@@ -130,6 +130,8 @@ const resolvers = {
       }
 
       const token = signToken(user);
+
+      user = await User.findOneAndUpdate({email},{status:"online"})
 
       return { token, user };
     },
@@ -229,6 +231,24 @@ const resolvers = {
             receiving===context.username ||
             requesting===context.username
           );
+        }
+      )
+    },
+    loggedIn: {
+      subscribe: withFilter(
+        ()=> pubsub.asyncIterator('LOGGED_IN'),
+        ({filtered},_,context)=> {
+          console.log('yoyo')
+          return filtered.includes(context.username)
+        }
+      )
+    },
+    loggedOut: {
+      subscribe: withFilter(
+        ()=> pubsub.asyncIterator('LOGGED_OUT'),
+        ({filtered},_,context)=> {
+          console.log('logged out subscription works');
+          return filtered.includes(context.username)
         }
       )
     }

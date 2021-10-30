@@ -16,6 +16,7 @@
     font-size: 1.5rem;
     line-height: 2.75rem;
     border: 2px solid black;
+    background-color: lightblue;
 }
 
 .alt-circle{
@@ -135,13 +136,20 @@
     text-overflow: ellipsis;
 }
 
+.last-message-time{
+    position: absolute;
+    top: 8px;
+    right: 20px;
+}
+
 .from-friend{
     background-color: lightgray;
     padding: 4px 16px;
     border-radius: 1rem;
     font-size: 1.25rem;
     float: left;
-    overflow-wrap:break-word;
+    overflow-y:hidden;
+    overflow-wrap:anywhere;
 }
 
 .from-me{
@@ -150,10 +158,16 @@
     border-radius: 1rem;
     font-size: 1.25rem;
     float: right;
-    overflow-wrap:break-word;
+    overflow-y:hidden;
+    overflow-wrap:anywhere;
 }
 
 .status-0{
     background-color: rgb(240, 240, 240);
     color: grey;
+}
+
+.search-friends-container,.friends-with-messages{
+    max-height: 350px;
+    overflow: auto;
 }

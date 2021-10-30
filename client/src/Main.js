@@ -9,6 +9,8 @@ import Profile from './pages/Profile';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import Messages from './components/Messages';
+import World from './pages/World';
+import Users from './pages/Users';
 
 import Auth from './utils/auth';
 
@@ -29,6 +31,19 @@ const Main = () => {
     const [messageFromProfile,setMessageFromProfile]=useState({});
 
     useEffect(()=>{
+      // let tokenCheck = setTimeOut(()=>{
+      //   if(!Auth.loggedIn()){
+      //     if(data){
+
+      //     }
+      //   };
+      // })
+      // return {
+      //   clearTimeout(tokenCheck);
+      // }
+    },[])
+
+    useEffect(()=>{
         if(!loading&&data)
             setWorlds([...data.me.worlds]);
     },[loading,data]);
@@ -43,7 +58,7 @@ const Main = () => {
             setFriends(friends=>{
                 let index = friends.findIndex(e=>e._id===messageData.messageSent._id);
                 let updatedFriend = {...friends[index]};
-                let messageIndex = 0;
+                let messageIndex = updatedFriend.messages.length;
                 for(let i = updatedFriend.messages.length-1; i>=0;i--){
                   if(updatedFriend.messages[i].message === messageData.messageSent.message.message &&
                     updatedFriend.messages[i].sender.username===messageData.messageSent.message.sender.username&&
@@ -135,7 +150,13 @@ const Main = () => {
                 />
             </Route>
             <Route exact path="/users/:id">
-              <Profile />
+              <Users />
+            </Route>
+            <Route exact path="/users">
+              <Users />
+            </Route>
+            <Route exact path="/world/:id">
+              <World />
             </Route>
           </div>
           {Auth.loggedIn()?<Messages friends={friends} data={data} fromProfile={messageFromProfile} setFriends={setFriends}/>:[]}

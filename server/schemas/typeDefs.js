@@ -109,6 +109,8 @@ const typeDefs = gql`
     friendAdded: Friend
     friendUpdated: Friend
     friendCanceled: Friend
+    loggedIn: User
+    loggedOut: User
   }
 
   type Mutation {

@@ -27,10 +27,15 @@ const FriendsWithMessage = ({setShowMessages,setShowFriends,friends,data,setFrie
         setShowFriends(false);
     }
 
-    // const convertTime = epoch => {
-
-    // }
-    //console.log(friends)
+    const convertTime = epoch => {
+        let d = new Date(parseInt(epoch)).toLocaleString().replace(',','').split(' ');
+        let today = new Date().toLocaleString().replace(',','').split(' ');;
+        if(d[0]===today[0]){
+            let [hour,minute] = d[1].split(":");
+            return `${hour}:${minute} ${d[2]}`
+        }
+        return d[0]
+    }
 
     return (
         <div>
@@ -46,7 +51,7 @@ const FriendsWithMessage = ({setShowMessages,setShowFriends,friends,data,setFrie
                     </form>
                 </div>
             </div>
-            <div className="row">
+            <div className="row friends-with-messages">
                 {friendsWithMessages.length?
                     friendsWithMessages
                         .filter(friend=>{
@@ -64,7 +69,7 @@ const FriendsWithMessage = ({setShowMessages,setShowFriends,friends,data,setFrie
                             <div className="message-friend" onClick={()=>{handleFriendClick({friend:f.username,id:f.id})}}>
                                 <h6>{f.username}</h6>
                                 <p className="mb-0 last-message">{f.messages[f.messages.length-1].message}</p>
-                                {/* {f.lastSent} */}
+                                <div className="last-message-time">{convertTime(f.messages[f.messages.length-1].createdAt)}</div>
                             </div>
                         </div>):
                     <div className="no-messages">No messages</div>}

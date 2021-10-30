@@ -1,5 +1,6 @@
 // Node Modules
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useMutation } from '@apollo/client';
 // Utilities
 import { ADD_FRIEND, CONFIRM_FRIEND, CANCEL_FRIEND } from '../utils/mutations';
@@ -91,6 +92,10 @@ const RenderAdded = ({friends,user,setFromProfile}) => {
     })
   }
 
+  const onProfile = (id) => {
+
+  }
+
   return (
     <div className="row">
       {added.map(friend=>
@@ -100,6 +105,9 @@ const RenderAdded = ({friends,user,setFromProfile}) => {
             friend.receiving.username:
             friend.requesting.username}
           <div style={{float:"right"}}>
+            <Link to={`/users/${friend._id}`}>
+              <button>Profile</button>
+            </Link>
             <button onClick={()=>onMessage(friend._id,friend)}>Message</button>
             <button onClick={()=>onCancel(friend._id)}>Remove</button>
           </div>
