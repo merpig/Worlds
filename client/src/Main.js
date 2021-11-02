@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { useQuery, useSubscription } from '@apollo/client';
+import { useQuery, useMutation, useSubscription } from '@apollo/client';
 import { BrowserRouter as Router, Route } from 'react-router-dom';
+import { Beforeunload } from 'react-beforeunload';
 
 import Home from './pages/Home';
 import Signup from './pages/Signup';
@@ -15,11 +16,14 @@ import Users from './pages/Users';
 import Auth from './utils/auth';
 
 import { QUERY_ME, QUERY_FRIENDS } from './utils/queries';
+import { LOGOUT_USER } from './utils/mutations';
 import { FRIEND_ADDED, FRIEND_CANCELED, FRIEND_UPDATED, MESSAGE_SENT } from './utils/subscriptions';
 
 const Main = () => {
     const { loading, data, error } = useQuery(QUERY_ME);
     const { loading: friendsLoading, data: friendsData} = useQuery(QUERY_FRIENDS);
+
+    const [logout] = useMutation(LOGOUT_USER)
 
     const { loading: newFriendDataLoading, data: newFriendData} = useSubscription(FRIEND_ADDED);
     const { loading: friendUpdatedLoading, data: friendUpdatedData} = useSubscription(FRIEND_UPDATED);
@@ -121,7 +125,12 @@ const Main = () => {
         }
     },[friendCanceledData, friendCanceledLoading]);
 
-    return(<Router>
+    const beforeUnload = () => {
+      logout();
+    }
+
+    return(<Beforeunload onBeforeunload={beforeUnload}>
+      <Router>
         <div className="flex-column justify-flex-start min-100-vh">
           <Header />
           <div className="container">
@@ -162,7 +171,7 @@ const Main = () => {
           {Auth.loggedIn()?<Messages friends={friends} data={data} fromProfile={messageFromProfile} setFriends={setFriends}/>:[]}
           <Footer />
         </div>
-    </Router>);
+    </Router></Beforeunload>);
 }
 
 export default Main;

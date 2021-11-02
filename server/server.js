@@ -61,38 +61,19 @@ const subscriptionServer = SubscriptionServer.create({
         //   });
         //   console.log(filtered)
         // });
-        pubsub.publish('LOGGED_IN',{
-          filtered: [],
-          loggedIn: {} // returned user data here
-        });
 
-        console.log("connected");
+        console.log(`${data.username} has connected`);
         return data
       } catch {
         console.log('Invalid token');
-        return
       }
     }
+    return false;
   },
   onDisconnect(_,context){
     context.initPromise.then( async user=>{
       if(user){
-        //console.log(user);
-        const friends = await Friend.find({
-          $and: [
-            {$or: [{ requesting: user._id }, { receiving: user._id }]},
-            {status: 1}
-          ]
-        },'receiving requesting').populate('receiving').populate('requesting');
-        const filtered = friends.map(friend=>{
-          return friend.requesting.username === user.username?
-            friend.receiving.username:friend.requesting.username;
-        });
-
-        pubsub.publish('LOGGED_OUT',{
-          filtered,
-          loggedOut: {} // returned user data here
-        });
+        console.log(`${user.username} has disconnected`)
       }
     })
   }

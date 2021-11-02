@@ -113,6 +113,10 @@ const typeDefs = gql`
     loggedOut: User
   }
 
+  type LogoutResponse {
+    ok: Boolean!
+  }
+
   type Mutation {
     addUser(username: String!, email: String!, password: String!): Auth
     addFriend(username: String!): Friend
@@ -120,6 +124,7 @@ const typeDefs = gql`
     cancelFriend(id: ID!): Friend
     sendMessage(id: ID!,message: String!): newMessage
     login(email: String!, password: String!): Auth
+    logout: LogoutResponse
     addWorld(id: ID!, worldname: String!, privacySetting: String!, visitSetting: String!): World
     editWorld(id: ID!, worldname: String!, privacySetting: String!, visitSetting: String!): World
     deleteWorld(id: ID!, userId: ID!): DeleteWorldResponse

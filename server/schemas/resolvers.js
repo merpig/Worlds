@@ -135,6 +135,16 @@ const resolvers = {
 
       return { token, user };
     },
+    logout: async (_, {}, context) => {
+      if(context.user){
+        const user = await User.findOneAndUpdate({_id: context.user._id},{status:"offline"},{new:"true"});
+        console.log('handle logout');
+        return {
+          ok: true
+        }
+      }
+      throw new AuthenticationError('No user logged in');
+    },
     addWorld: async (_, {id, worldname, privacySetting, visitSetting}, context) => {
       const preworld = await World.create({ownedBy: id, worldname, privacySetting, visitSetting});
       const sectionNode = await SectionNode.create({});
