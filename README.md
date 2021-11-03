@@ -23,3 +23,9 @@ Express
 
 Apolloserver/Graphql
 - Included in npm installs
+
+# Usage
+
+- In your terminal/gitbash navigate to the root of the Worlds repository and run the command  `npm install`
+- Once the install completes run the command `npm run develop`
+- If there are issues with starting the server make sure mongod is running and that you have ports 3000 and 3001 open
