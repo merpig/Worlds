@@ -35,6 +35,7 @@ const Main = () => {
     const [messageFromProfile,setMessageFromProfile]=useState({});
 
     useEffect(()=>{
+      Auth.loggedIn()
       // let tokenCheck = setTimeOut(()=>{
       //   if(!Auth.loggedIn()){
       //     if(data){

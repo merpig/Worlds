@@ -111,6 +111,7 @@ const typeDefs = gql`
     friendCanceled: Friend
     loggedIn: User
     loggedOut: User
+    newMessage: Boolean
   }
 
   type LogoutResponse {

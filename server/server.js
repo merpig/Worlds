@@ -44,28 +44,11 @@ const subscriptionServer = SubscriptionServer.create({
     if(token){
       try {
         const { data } = jwt.verify(token, secret, { maxAge: expiration });
-
-        // Friend.find({
-        //   $and: [
-        //     {$or: [{ requesting: data._id }, { receiving: data._id }]},
-        //     {status: 1}
-        //   ]
-        // },'receiving requesting').populate('receiving').populate('requesting').then(friends=>{
-        //   const filtered = friends.map(friend=>{
-        //     return friend.requesting.username === data.username?
-        //       friend.receiving.username:friend.requesting.username;
-        //   });
-        //   pubsub.publish('LOGGED_IN',{
-        //     filtered,
-        //     loggedIn: {} // returned user data here
-        //   });
-        //   console.log(filtered)
-        // });
-
         console.log(`${data.username} has connected`);
         return data
       } catch {
         console.log('Invalid token');
+        return false;
       }
     }
     return false;

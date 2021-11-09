@@ -1,5 +1,6 @@
 const { AuthenticationError, ApolloError } = require('apollo-server-express');
 const { PubSub, withFilter } = require('graphql-subscriptions');
+// const asyncify = require('callback-to-async-iterator');
 const { signToken } = require('../utils/auth');
 const { User, World, Section, Placement, SectionNode, Character, Feature, Friend, Message } = require('../models');
 
@@ -7,11 +8,17 @@ const pubsub = new PubSub();
 
 class FriendError extends ApolloError {
   constructor(message) {
-    super(message, 'ADD_FRIEND_ERROR');
+    super(message, 'FRIEND_ERROR');
 
     Object.defineProperty(this, 'name', { value: 'FriendError' });
   }
 }
+
+// const friendEventEmitter = Friend.watch();
+// const listenToNewMessages = cb => {
+//   console.log("setting up watcher")
+//   return friendEventEmitter.on('change', change=> cb(change));
+// }
 
 const resolvers = {
   Query: {
@@ -131,7 +138,7 @@ const resolvers = {
 
       const token = signToken(user);
 
-      user = await User.findOneAndUpdate({email},{status:"online"})
+      user = await User.findOneAndUpdate({email},{status:"active"})
 
       return { token, user };
     },
@@ -139,6 +146,22 @@ const resolvers = {
       if(context.user){
         const user = await User.findOneAndUpdate({_id: context.user._id},{status:"offline"},{new:"true"});
         console.log('handle logout');
+                // Friend.find({
+        //   $and: [
+        //     {$or: [{ requesting: data._id }, { receiving: data._id }]},
+        //     {status: 1}
+        //   ]
+        // },'receiving requesting').populate('receiving').populate('requesting').then(friends=>{
+        //   const filtered = friends.map(friend=>{
+        //     return friend.requesting.username === data.username?
+        //       friend.receiving.username:friend.requesting.username;
+        //   });
+        //   pubsub.publish('LOGGED_IN',{
+        //     filtered,
+        //     loggedIn: {} // returned user data here
+        //   });
+        //   console.log(filtered)
+        // });
         return {
           ok: true
         }
@@ -261,7 +284,13 @@ const resolvers = {
           return filtered.includes(context.username)
         }
       )
-    }
+    },
+    // newMessage: {
+    //   subscribe : () => {
+    //     console.log(asyncify(listenToNewMessages));
+    //     return true
+    //   }
+    // }
   }
 };
 
