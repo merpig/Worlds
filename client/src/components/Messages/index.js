@@ -60,6 +60,7 @@ const FriendsWithMessage = ({setShowMessages,setShowFriends,friends,data,setFrie
                         )
                         .map(f=>({
                             username: f.receiving.username===data.me.username?f.requesting.username:f.receiving.username,
+                            status:f.receiving.username===data.me.username?f.requesting.status:f.receiving.status,
                             id: f._id,
                             messages: f.messages,
                             lastSent: f.messages[f.messages.length-1].createdAt
@@ -67,9 +68,11 @@ const FriendsWithMessage = ({setShowMessages,setShowFriends,friends,data,setFrie
                         .sort((a,b)=>b.lastSent-a.lastSent)
                         .map(f=><div key={f.id} className="col-12">
                             <div className="message-friend" onClick={()=>{handleFriendClick({friend:f.username,id:f.id})}}>
-                                <h6>{f.username}</h6>
+                                <h6><div className={`status-circle ${f.status==="online"?"online":"offline"}`}></div>{f.username}</h6>
                                 <p className="mb-0 last-message">{f.messages[f.messages.length-1].message}</p>
-                                <div className="last-message-time">{convertTime(f.messages[f.messages.length-1].createdAt)}</div>
+                                <div className="last-message-time">{convertTime(f.messages[f.messages.length-1].createdAt)}
+                                    
+                                </div>
                             </div>
                         </div>):
                     <div className="no-messages">No messages</div>}

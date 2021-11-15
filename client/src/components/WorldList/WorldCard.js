@@ -1,4 +1,5 @@
 import React, {useState} from 'react';
+import {Link} from 'react-router-dom'
 import Auth from '../../utils/auth';
 import { DELETE_WORLD } from '../../utils/mutations';
 import { useMutation } from '@apollo/client';
@@ -26,8 +27,8 @@ const WorldCard = ({ _id, worldname, privacySetting, visitSetting, players, setW
     };
   
     return (
-      <div key={_id} className="card mb-3">
-        <h4 className="card-header bg-dark text-light p-2 m-0">
+      <div key={_id} className="card mb-3 world-card  bg-dark">
+        <h4 className="world-card-header text-light p-2 m-0">
           {/* <Link className="text-light" to={`/world/${_id}`}> */}
             {worldname}
           {/* </Link> */}
@@ -35,11 +36,15 @@ const WorldCard = ({ _id, worldname, privacySetting, visitSetting, players, setW
         </h4>
         {createWorld?
         <CreateWorld showCreateWorld={showCreateWorld} worlds={worlds} setWorlds={setWorlds} edit={true} worldData={worldData}/>:
-        <div>
-            <div> {privacySetting} can visit when you're {visitSetting}.</div>
-            <div> There are currently {players.length} players in this world. </div>
-            <button>Enter World</button>
-            <button className="deleteWorld" onClick={()=>onDeleteWorld(_id)}>Delete World</button>
+        <div className="world-card-body text-light">
+            <div className="world-card-content"> {privacySetting} can visit when you're {visitSetting}.</div>
+            <div className="world-card-content"> There are currently {players.length} players in this world. </div>
+            <div className="world-card-footer">
+              <Link to={`/world/${_id}`}>
+                <div className="btn confirm-btn">Enter World</div>
+              </Link>
+              <button className="btn cancel-btn" onClick={()=>onDeleteWorld(_id)}><i className="fa fa-trash"></i></button>
+            </div>
         </div>}
       </div>
     );

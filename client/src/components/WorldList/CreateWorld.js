@@ -67,7 +67,7 @@ const CreateWorld = ({showCreateWorld,setWorlds,worlds,edit,worldData}) => {
     }
   
     return (
-      <div>
+      <div className="world-form">
         <form onSubmit={handleFormSubmit}>
           <input
             className="form-input"
@@ -77,21 +77,22 @@ const CreateWorld = ({showCreateWorld,setWorlds,worlds,edit,worldData}) => {
             value={formState.worldname}
             onChange={handleChange}
           />
-          <label htmlFor="privacySetting">Privacy Setting:</label>
-          <select name="privacySetting" onChange={handleChange} defaultValue={worldData?.privacySetting||'Anyone'}>
+          <label htmlFor="privacy-setting">Visitors: </label>
+          <select name="privacy-setting" className="privacy-setting" onChange={handleChange} defaultValue={worldData?.privacySetting||'Anyone'}>
             <option value="Anyone">Anyone</option>
             <option value="Friends">Friends</option>
             <option value="No one">No one</option>
           </select>
-          <label htmlFor="visitSetting">Players can visit when you're: </label>
-          <select name="visitSetting" onChange={handleChange} defaultValue={worldData?.visitSetting||'offline'}>
+          <hr></hr>
+          <label htmlFor="visit-setting">Can visit: </label>
+          <select name="visit-setting" className="privacy-setting" onChange={handleChange} defaultValue={worldData?.visitSetting||'offline'}>
             <option value="offline">Offline</option>
             <option value="online">Online</option>
             <option value="present">In the world</option>
           </select>
-          <br/>
-          <button type="submit">{edit?"Save Changes":"Create"}</button>
-          <button onClick={handleFormCancel}>Cancel</button>
+          <hr></hr>
+          <button className="btn confirm-btn" type="submit">{edit?"Save Changes":"Create"}</button>
+          <button className="btn cancel-btn" onClick={handleFormCancel}>Cancel</button>
         </form>
       </div>
     )

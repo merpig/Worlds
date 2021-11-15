@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useSubscription } from '@apollo/client';
-import { BrowserRouter as Router, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Redirect, useParams } from 'react-router-dom';
 import { Beforeunload } from 'react-beforeunload';
 
 import Home from './pages/Home';
@@ -17,7 +17,14 @@ import Auth from './utils/auth';
 
 import { QUERY_ME, QUERY_FRIENDS } from './utils/queries';
 import { LOGOUT_USER } from './utils/mutations';
-import { FRIEND_ADDED, FRIEND_CANCELED, FRIEND_UPDATED, MESSAGE_SENT } from './utils/subscriptions';
+import { 
+  FRIEND_ADDED, 
+  FRIEND_CANCELED, 
+  FRIEND_UPDATED, 
+  MESSAGE_SENT,
+  LOGGED_IN,
+  LOGGED_OUT
+} from './utils/subscriptions';
 
 const Main = () => {
     const { loading, data, error } = useQuery(QUERY_ME);
@@ -29,24 +36,60 @@ const Main = () => {
     const { loading: friendUpdatedLoading, data: friendUpdatedData} = useSubscription(FRIEND_UPDATED);
     const { loading: friendCanceledLoading, data: friendCanceledData} = useSubscription(FRIEND_CANCELED);
     const { loading: messageLoading, data: messageData} = useSubscription(MESSAGE_SENT);
+    const { loading: loggedInLoading, data: loggedInData, error: loggedInError} = useSubscription(LOGGED_IN);
+    const { loading: loggedOutLoading, data: loggedOutData, error: loggedOutError} = useSubscription(LOGGED_OUT);
+
 
     const [friends,setFriends]=useState([]);
     const [worlds,setWorlds]=useState([]);
     const [messageFromProfile,setMessageFromProfile]=useState({});
+    const [showNavFooter,setShowNavFooter]=useState(true);
 
     useEffect(()=>{
       Auth.loggedIn()
-      // let tokenCheck = setTimeOut(()=>{
-      //   if(!Auth.loggedIn()){
-      //     if(data){
-
-      //     }
-      //   };
-      // })
-      // return {
-      //   clearTimeout(tokenCheck);
-      // }
     },[])
+
+    useEffect(()=>{
+      //console.log(loggedInLoading,loggedInData,loggedInError)
+      if(!loggedInLoading&&loggedInData){
+        const id = loggedInData.loggedIn._id;
+        setFriends(friends=>{
+          const index = friends.findIndex(e=>e.receiving._id===id||e.requesting._id===id);
+          let friendToUpdate = {...friends[index]};
+          let receiving = {...friendToUpdate.receiving}
+          let requesting = {...friendToUpdate.requesting}
+          receiving._id===id?
+            receiving.status="online":
+            requesting.status="online";
+          return [
+            ...friends.slice(0,index),
+            {...friendToUpdate,receiving,requesting},
+            ...friends.slice(index+1)
+            ]
+        })
+      }
+    },[loggedInLoading,loggedInData,loggedInError])
+
+    useEffect(()=>{
+      //console.log(loggedOutLoading,loggedOutData,loggedOutError)
+      if(!loggedOutLoading&&loggedOutData){
+        const id = loggedOutData.loggedOut._id;
+        setFriends(friends=>{
+          const index = friends.findIndex(e=>e.receiving._id===id||e.requesting._id===id);
+          let friendToUpdate = {...friends[index]};
+          let receiving = {...friendToUpdate.receiving}
+          let requesting = {...friendToUpdate.requesting}
+          receiving._id===id?
+            receiving.status="offline":
+            requesting.status="offline";
+          return [
+            ...friends.slice(0,index),
+            {...friendToUpdate,receiving,requesting},
+            ...friends.slice(index+1)
+            ]
+        })
+      }
+    },[loggedOutLoading,loggedOutData,loggedOutError])
 
     useEffect(()=>{
         if(!loading&&data)
@@ -127,13 +170,13 @@ const Main = () => {
     },[friendCanceledData, friendCanceledLoading]);
 
     const beforeUnload = () => {
-      logout();
+      //logout();
     }
 
     return(<Beforeunload onBeforeunload={beforeUnload}>
       <Router>
         <div className="flex-column justify-flex-start min-100-vh">
-          <Header />
+          {showNavFooter?<Header />:[]}
           <div className="container">
             <Route exact path="/">
               <Home 
@@ -141,13 +184,14 @@ const Main = () => {
                 data={data}
                 worlds={worlds}
                 setWorlds={setWorlds}
+                setShowNavFooter={setShowNavFooter}
               />
             </Route>
             <Route exact path="/login">
-              <Login />
+              <Login setShowNavFooter={setShowNavFooter}/>
             </Route>
             <Route exact path="/signup">
-              <Signup />
+              <Signup setShowNavFooter={setShowNavFooter}/>
             </Route>
             <Route exact path="/me">
               <Profile 
@@ -157,6 +201,7 @@ const Main = () => {
                 friends={friends} 
                 friendsLoading={friendsLoading}
                 setFromProfile={setMessageFromProfile}
+                setShowNavFooter={setShowNavFooter}
                 />
             </Route>
             <Route exact path="/users/:id">
@@ -166,11 +211,14 @@ const Main = () => {
               <Users />
             </Route>
             <Route exact path="/world/:id">
-              <World />
+              {<World setShowNavFooter={setShowNavFooter}/>}
+            </Route>
+            <Route exact path="/world">
+              <Redirect to="/"/>
             </Route>
           </div>
           {Auth.loggedIn()?<Messages friends={friends} data={data} fromProfile={messageFromProfile} setFriends={setFriends}/>:[]}
-          <Footer />
+          {showNavFooter?<Footer />:[]}
         </div>
     </Router></Beforeunload>);
 }

@@ -10,6 +10,7 @@ const typeDefs = gql`
     currentLocation: Placement
     worlds: [World]
     locations: [Placement]
+    status: String
   }
 
 
@@ -129,6 +130,7 @@ const typeDefs = gql`
     addWorld(id: ID!, worldname: String!, privacySetting: String!, visitSetting: String!): World
     editWorld(id: ID!, worldname: String!, privacySetting: String!, visitSetting: String!): World
     deleteWorld(id: ID!, userId: ID!): DeleteWorldResponse
+    enterWorld(id: ID!): World
   }
 `;
 

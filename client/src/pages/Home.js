@@ -1,11 +1,15 @@
 // Node Modules
-import React from 'react';
+import React, { useEffect } from 'react';
 // Utilities
 import Auth from '../utils/auth';
 // Components
 import WorldList from '../components/WorldList';
 
-const Home = ({worlds,setWorlds,loading,data}) => {
+const Home = ({worlds,setWorlds,loading,data,setShowNavFooter}) => {
+
+  useEffect(()=>{
+    setShowNavFooter(true);
+  },[])
   const renderUserList = () => {
     if (loading) {
       return <h2>Loading...</h2>

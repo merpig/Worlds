@@ -1,0 +1,103 @@
+.list-group{
+    list-style-type: none;
+    text-align: left;
+    padding: 0px;
+    border: 1px solid green;
+    border-radius: .25rem;
+}
+
+.list-group-item{
+    font-size: .9rem;
+    margin-bottom: 4px;
+    padding: 8px 4px;
+    border-bottom: 1px solid grey;
+}
+
+.last{
+    border-bottom: none;
+}
+
+.profile-header{
+    border-radius: .25rem;
+    border: 2px solid lightgray;
+}
+
+.profile-info{
+    border: 2px solid green;
+    border-radius: 1rem;
+}
+
+.friends-list{
+    border: 2px solid green;
+    border-radius: 1rem;
+}
+
+.tab-container{
+    border-top-left-radius: .25rem;
+    border-top-right-radius: .25rem;
+    border-bottom: 2px solid lightgray;
+}
+
+.tab-btn{
+    background-color: #1a1a1a;
+    color: lightgray;
+    border-bottom-left-radius: 0rem;
+    border-bottom-right-radius: 0rem;
+    border: 2px solid #1a1a1a;
+    border-bottom: unset;
+}
+
+.tab-btn:hover{
+    border: 2px solid lightgray;
+    border-bottom: unset;
+    background-color: unset;
+}
+
+.tab-active{
+    border-top-left-radius: .25rem;
+    border-top-right-radius: .25rem;
+    border-bottom-left-radius: 0rem;
+    border-bottom-right-radius: 0rem;
+    border-bottom: 0px;
+    border-color: lightgray;
+    background-color: lightgrey;
+    color: #1a1a1a;
+}
+
+.tab-active:hover{
+    background-color: lightgrey;
+    color: #1a1a1a;
+}
+
+.friend-row{
+    /* border: 2px solid grey; */
+    border-radius: .25rem;
+    background-color: white;
+    margin-top: 4px;
+}
+
+.add-friend{
+    border-radius: .25rem;
+    border: 2px solid lightgray;
+    background-color: lightgray;
+}
+
+.go-btn{
+    color: #1a1a1a;
+    border: 2px solid #1a1a1a;
+    background-color: unset;
+    margin-right: 4px;
+}
+
+.go-btn:hover{
+    cursor: pointer;
+    color: lightgray;
+    background-color: #1a1a1a;
+}
+
+.pending-request{
+    line-height: 40px;
+    border-radius: .25rem;
+    background-color: white;
+    border: 2px solid lightgrey;
+}

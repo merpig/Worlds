@@ -14,15 +14,18 @@ const WorldList = ({ worlds,setWorlds,title }) => {
   }
 
   return (
-    <>
-      <h3>{title}</h3>
-      {createWorld?
-        <CreateWorld showCreateWorld={showCreateWorld} worlds={worlds} setWorlds={setWorlds}/>:
-        <button onClick={()=>showCreateWorld(true)}>Create World</button>
-      }
-      <hr></hr>
+    <div className="worlds-wrapper">
+      <div className="worlds-header bg-dark text-light mb-5">
+        <h3><u>{title}</u></h3>
+        
+        {createWorld?
+          <CreateWorld showCreateWorld={showCreateWorld} worlds={worlds} setWorlds={setWorlds}/>:
+          <button className="btn create-world" onClick={()=>showCreateWorld(true)}><strong>Create World</strong></button>
+        }
+      </div>
+      
       {renderWorlds()}
-    </>
+    </div>
   );
 };
 

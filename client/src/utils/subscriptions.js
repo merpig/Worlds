@@ -25,9 +25,11 @@ export const FRIEND_UPDATED = gql`
     friendUpdated{
       receiving {
           username
+          status
       }
       requesting {
           username
+          status
       }
       status
     }
@@ -60,6 +62,24 @@ export const MESSAGE_SENT = gql`
         status
         createdAt
       }
+    }
+  }
+`;
+
+export const LOGGED_IN = gql`
+  subscription loggedIn{
+    loggedIn{
+      _id
+      username
+    }
+  }
+`;
+
+export const LOGGED_OUT = gql`
+  subscription loggedOut{
+    loggedOut{
+      _id
+      username
     }
   }
 `;

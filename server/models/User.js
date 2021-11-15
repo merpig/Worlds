@@ -16,11 +16,15 @@ const userSchema = new Schema({
   },
   status: {
     type: String,
+    default: "offline"
   },
   password: {
     type: String,
     required: true,
     minlength: 8,
+  },
+  connection: {
+    type: String,
   },
   character: {
     type: Schema.Types.ObjectId, ref: 'Character',

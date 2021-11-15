@@ -123,3 +123,32 @@ export const SEND_MESSAGE = gql`
     }
   }
 `;
+
+export const ENTER_WORLD = gql`
+  mutation enterWorld($id: ID!) {
+    enterWorld(id: $id) {
+      _id
+      worldname
+      ownedBy {
+        username
+      }
+      mainSection {
+        _id
+        features {
+          _id
+          name
+          blocking
+          x
+          y
+        }
+      }
+      sections {
+        _id
+      }
+      players {
+        _id
+        username
+      }
+    }
+}
+`;

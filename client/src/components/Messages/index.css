@@ -40,6 +40,7 @@
     position: fixed;
     right: 25px;
     bottom: 25px;
+    z-index: 100;
 }
 
 .message-button:hover,
@@ -63,6 +64,7 @@
     position: fixed;
     right: 0px;
     bottom: 0px;
+    z-index: 100;
 }
 
 .message-header{
@@ -162,6 +164,10 @@
     overflow-wrap:anywhere;
 }
 
+.message-from{
+    display: inline-block;
+}
+
 .status-0{
     background-color: rgb(240, 240, 240);
     color: grey;
@@ -170,4 +176,20 @@
 .search-friends-container,.friends-with-messages{
     max-height: 350px;
     overflow: auto;
+}
+
+.status-circle{
+    display: inline-block;
+    border-radius: .5rem;
+    margin-right: 4px;
+    padding: 5px;
+    margin-left: 4px;
+}
+
+.online{
+    background-color:  green;
+}
+
+.offline{
+    background-color: lightgrey;
 }

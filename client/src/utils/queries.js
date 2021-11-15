@@ -56,10 +56,12 @@ query friends {
     requesting {
       _id
       username
+      status
     }
     receiving {
       _id
       username
+      status
     }
     status
     messages {
@@ -72,5 +74,13 @@ query friends {
       createdAt
     }
   }
+}
+`;
+
+export const QUERY_WORLD = gql`
+  query world($id: ID!) {
+    world(id: $id) {
+      _id
+    }
 }
 `;

@@ -1,10 +1,7 @@
 const express = require('express');
-const { ApolloServer } = require('apollo-server-express');
-const { SubscriptionServer } = require('subscriptions-transport-ws');
+const { ApolloServer, PubSub } = require('apollo-server-express');
 const { User, Friend } = require('./models')
-const { PubSub } = require('graphql-subscriptions');
 const { makeExecutableSchema} = require('@graphql-tools/schema');
-const { execute, subscribe } = require('graphql')
 const path = require('path');
 const { createServer } = require('http');
 const { typeDefs, resolvers } = require('./schemas');
@@ -14,57 +11,111 @@ const PORT = process.env.PORT || 3001;
 const jwt = require('jsonwebtoken');
 const secret = 'mysecretssshhhhhhh'; // TODO: move to .env
 const expiration = '2h';
-const pubsub = new PubSub();
 const app = express();
 const schema = makeExecutableSchema({typeDefs,resolvers});
 const httpServer = createServer(app);
+const ps = new PubSub();
+
+// //production redis url
+// let redis_url = process.env.REDIS_URL;
+// if (process.env.ENVIRONMENT === 'development') {  
+//   require('dotenv').config();  
+//   redis_url = "redis://127.0.0.1"; 
+// }  
+// //redis setup
+// const client = require('redis').createClient(redis_url);
+// const Redis = require('ioredis');
+// const redis = new Redis(redis_url);
 
 
 const server = new ApolloServer({
   schema,
-  context: authMiddleware,
-  plugins: [{
-    async serverWillStart(){
-      return {
-        async drainServer(){
-          subscriptionServer.close();
+  context: ({req, connection})=>{
+    return connection?connection.context:{...authMiddleware({req}),ps}
+  },
+  // plugins: [{
+  //   async serverWillStart(){
+  //     return {
+  //       async drainServer(){
+  //         subscriptionServer.close();
+  //       }
+  //     }
+  //   }
+  // }],
+  subscriptions: {
+    onConnect: async (connectionParams,a,b) => {
+      const token = connectionParams.authToken.split(' ').pop().trim();
+      if(token){
+        try {
+          const { data } = jwt.verify(token, secret, { maxAge: expiration });
+          
+          const userData = await User.findOneAndUpdate({_id: data._id},{status:"online",connection:"connected"});
+          if(userData.connection!=="disconnected") return {...data,ps};
+          console.log(`${data.username} has connected`);
+          const friends = await Friend.find({
+              $and: [
+                {$or: [{ requesting: data._id }, { receiving: data._id }]},
+                {status: 1}
+              ]
+            },'receiving requesting')
+            .populate('receiving')
+            .populate('requesting');
+
+          const filtered = friends.map(friend=>{
+            return friend.requesting.username === data.username?
+              friend.receiving.username:friend.requesting.username;
+          });
+          //console.log(filtered)
+          ps.publish('LOGGED_IN',{
+            filtered,
+            loggedIn: userData // returned user data here
+          });
+
+          return {...data,ps}
+        } catch {
+          console.log('Invalid token');
+          return false;
         }
       }
+      return false;
+    },
+    onDisconnect(_,context){
+      context.initPromise.then( async user=>{
+        if(user){
+
+          const reconnectingUser = await User.findOneAndUpdate({_id: user._id},{connection: "reconnecting"});
+
+          setTimeout(async ()=>{
+
+            const userData = await User.findOneAndUpdate({_id: user._id,connection: "reconnecting"},{status:"offline",connection:"disconnected"},{new:"true"});
+            if(!userData) return;
+            console.log(`${user.username} has disconnected`);
+            const friends = await Friend.find({
+                $and: [
+                  {$or: [{ requesting: user._id }, { receiving: user._id }]},
+                  {status: 1}
+                ]
+              },'receiving requesting')
+              .populate('receiving')
+              .populate('requesting');
+  
+            const filtered = friends.map(friend=>{
+              return friend.requesting.username === user.username?
+                friend.receiving.username:friend.requesting.username;
+            });
+            ps.publish('LOGGED_OUT',{
+              filtered,
+              loggedOut: userData // returned user data here
+            });
+          }, 3000)
+        }
+      })
     }
-  }]
+  }
 })
 
-const subscriptionServer = SubscriptionServer.create({
-  schema,
-  context: authMiddleware,
-  execute,
-  subscribe,
-  onConnect(connectionParams) {
-    const token = connectionParams.authToken.split(' ').pop().trim();
-    if(token){
-      try {
-        const { data } = jwt.verify(token, secret, { maxAge: expiration });
-        console.log(`${data.username} has connected`);
-        return data
-      } catch {
-        console.log('Invalid token');
-        return false;
-      }
-    }
-    return false;
-  },
-  onDisconnect(_,context){
-    context.initPromise.then( async user=>{
-      if(user){
-        console.log(`${user.username} has disconnected`)
-      }
-    })
-  }
-}, {
-  server: httpServer,
-  path: server.graphqlPath
-});
 server.applyMiddleware({app})
+server.installSubscriptionHandlers(httpServer);
 
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
