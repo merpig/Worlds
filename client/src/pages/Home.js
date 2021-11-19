@@ -4,6 +4,7 @@ import React, { useEffect } from 'react';
 import Auth from '../utils/auth';
 // Components
 import WorldList from '../components/WorldList';
+import { Redirect } from 'react-router-dom';
 
 const Home = ({worlds,setWorlds,loading,data,setShowNavFooter}) => {
 
@@ -22,8 +23,9 @@ const Home = ({worlds,setWorlds,loading,data,setShowNavFooter}) => {
     } 
   }
 
+  if(!Auth.loggedIn()) return <Redirect to="/login" /> 
+
   const renderUsername = () => {
-    if (!Auth.loggedIn()) return 'Please login or signup'; 
     return Auth.getProfile().data.username;
   }
 

@@ -206,10 +206,21 @@ const resolvers = {
         throw new FriendError('You must be friends to message this user.');
       }
       throw new AuthenticationError('You need to be logged in!');
+    },
+    movePlayer: async(_,{},context) => {
+      
     }
   },
 
   Subscription : {
+    updateLocation: {
+      subscribe: withFilter(
+        (_,__,{ps})=> ps.asyncIterator("UPDATE_LOCATION"),
+        ({filtered},_,context)=> {
+          
+        }
+      )
+    },
     loggedIn: {
       subscribe: withFilter(
         (_,__,{ps})=> ps.asyncIterator('LOGGED_IN'),

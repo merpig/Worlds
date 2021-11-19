@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useMutation } from '@apollo/client';
 import { LOGIN_USER } from '../utils/mutations';
+import "./Login.css";
 
 import Auth from '../utils/auth';
 
@@ -44,7 +45,7 @@ const Login = ({setShowNavFooter}) => {
   };
 
   return (
-    <main className="flex-row justify-center mb-4">
+    <main className="flex-row justify-center mb-4 bg-dark login-form">
       <div className="col-12 col-lg-10">
         <div className="card">
           <h4 className="card-header bg-dark text-light p-2">Login</h4>
@@ -73,12 +74,14 @@ const Login = ({setShowNavFooter}) => {
                   onChange={handleChange}
                 />
                 <button
-                  className="btn btn-block btn-primary"
+                  className="btn btn-block confirm-btn"
                   style={{ cursor: 'pointer' }}
                   type="submit"
                 >
                   Submit
                 </button>
+
+                <p className="text-light mb-0 mt-3"> Don't have an account? <Link to="/Signup">Signup</Link></p>
               </form>
             )}
 

@@ -105,6 +105,15 @@ const typeDefs = gql`
     ok: Boolean!
   }
 
+  type LogoutResponse {
+    ok: Boolean!
+  }
+
+  type NewPlacement {
+    userId: ID
+    position: Position
+  }
+
   type Subscription {
     messageSent: newMessage
     friendAdded: Friend
@@ -113,13 +122,11 @@ const typeDefs = gql`
     loggedIn: User
     loggedOut: User
     newMessage: Boolean
-  }
-
-  type LogoutResponse {
-    ok: Boolean!
+    updateLocation: NewPlacement
   }
 
   type Mutation {
+    movePlayer(position: Placement!): Placement
     addUser(username: String!, email: String!, password: String!): Auth
     addFriend(username: String!): Friend
     confirmFriend(id: ID!): Friend

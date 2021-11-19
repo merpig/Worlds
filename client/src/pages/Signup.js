@@ -38,7 +38,7 @@ const Signup = () => {
   };
 
   return (
-    <main className="flex-row justify-center mb-4">
+    <main className="flex-row justify-center mb-4 login-form bg-dark">
       <div className="col-12 col-lg-10">
         <div className="card">
           <h4 className="card-header bg-dark text-light p-2">Sign Up</h4>
@@ -75,12 +75,14 @@ const Signup = () => {
                   onChange={handleChange}
                 />
                 <button
-                  className="btn btn-block btn-primary"
+                  className="btn btn-block confirm-btn"
                   style={{ cursor: 'pointer' }}
                   type="submit"
                 >
                   Submit
                 </button>
+
+                <p className="text-light mb-0 mt-3"> Already have an account? <Link to="/login">Login</Link></p>
               </form>
             )}
 

@@ -1,6 +1,6 @@
 // Node Modules
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Redirect, Link } from 'react-router-dom';
 import { useMutation } from '@apollo/client';
 // Utilities
 import { ADD_FRIEND, CONFIRM_FRIEND, CANCEL_FRIEND } from '../utils/mutations';
@@ -238,14 +238,7 @@ const Profile = ({loading,data,error,friends,friendsLoading,setFromProfile}) => 
     return <h4>Loading...</h4>;
   }
   
-  if (!Auth.loggedIn()) {
-    return (
-      <h4 className="bg-dark text-light">
-        You need to be logged in to see this. Use the navigation links above to
-        sign up or log in!
-      </h4>
-    );
-  }
+  if(!Auth.loggedIn()) return <Redirect to="/login" />
 
   const renderCurrentUserInfo = () => {
     if (loading) return null;
