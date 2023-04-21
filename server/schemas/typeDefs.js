@@ -109,9 +109,14 @@ const typeDefs = gql`
     ok: Boolean!
   }
 
-  type NewPlacement {
-    userId: ID
-    position: Position
+  type StatusResponse {
+    ok: Boolean!
+  }
+
+  type Status {
+    id: ID!
+    username: String!
+    status: String!
   }
 
   type Subscription {
@@ -122,22 +127,29 @@ const typeDefs = gql`
     loggedIn: User
     loggedOut: User
     newMessage: Boolean
-    updateLocation: NewPlacement
+    updateLocation: Placement
+    updateStatus: Status
   }
 
   type Mutation {
-    movePlayer(position: Placement!): Placement
     addUser(username: String!, email: String!, password: String!): Auth
+
     addFriend(username: String!): Friend
     confirmFriend(id: ID!): Friend
     cancelFriend(id: ID!): Friend
+
     sendMessage(id: ID!,message: String!): newMessage
+
     login(email: String!, password: String!): Auth
     logout: LogoutResponse
+    statusUpdate(status: String!): StatusResponse
+
     addWorld(id: ID!, worldname: String!, privacySetting: String!, visitSetting: String!): World
     editWorld(id: ID!, worldname: String!, privacySetting: String!, visitSetting: String!): World
     deleteWorld(id: ID!, userId: ID!): DeleteWorldResponse
     enterWorld(id: ID!): World
+
+    createPosition: Placement
   }
 `;
 

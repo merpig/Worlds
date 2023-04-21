@@ -83,3 +83,13 @@ export const LOGGED_OUT = gql`
     }
   }
 `;
+
+export const UPDATE_STATUS = gql`
+  subscription updateStatus{
+    updateStatus{
+      _id
+      username
+      status
+    }
+  }
+`;

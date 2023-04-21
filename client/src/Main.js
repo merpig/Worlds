@@ -211,7 +211,7 @@ const Main = () => {
               <Users />
             </Route>
             <Route exact path="/world/:id">
-              {<World setShowNavFooter={setShowNavFooter}/>}
+              {<World setShowNavFooter={setShowNavFooter} me={data}/>}
             </Route>
             <Route exact path="/world">
               <Redirect to="/"/>

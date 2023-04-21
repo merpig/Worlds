@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Redirect, useParams } from 'react-router-dom';
 import { useMutation } from '@apollo/client';
 import { ENTER_WORLD } from '../utils/mutations';
@@ -6,6 +6,7 @@ import * as THREE from "three";
 import Auth from '../utils/auth';
 import "./World.css";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
+import { Link } from 'react-router-dom';
 
 const CameraControls = (camera, renderer,scene) => {
     let controls = new OrbitControls( camera , renderer.domElement);
@@ -29,9 +30,11 @@ const CameraControls = (camera, renderer,scene) => {
     return controls;
 }
 
-const RenderWorld = ({id}) => {
+const RenderWorld = ({id, me}) => {
     
     const [enterWorld, {data, loading, error}] = useMutation(ENTER_WORLD);
+    const [worldError,setWorldError] = useState(false);
+    const [errorMessage,setErrorMessage] = useState('');
     // const [exitWorld, {data, loading, error}] = useMutation(EXIT_WORLD);
     const world = data?.enterWorld || {};
 
@@ -41,27 +44,10 @@ const RenderWorld = ({id}) => {
     let renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     let raycaster = new THREE.Raycaster();
     let mouse = new THREE.Vector2();
-    //let controls = CameraControls(camera, renderer,scene);
 
-    renderer.setClearColor(new THREE.Color("black"),1);
-    renderer.domElement.className = "canvas";
-    renderer.setSize( window.innerWidth, window.innerHeight);
-
-    camera.position.z = 5;
-    camera.position.y = 5;
-    camera.position.x = 5;
-    camera.lookAt(new THREE.Vector3(5,5,0))
     let xRotation = .5;
-    camera.translateZ(-5);
-    //camera.translateY(5);
-    camera.rotateX(.5);
-    camera.translateZ(5);
-    //camera.translateY(-5);
 
-
-
-
-    renderer.render( scene, camera );
+    let character;
 
     window.addEventListener("resize", 
         () => {
@@ -74,7 +60,7 @@ const RenderWorld = ({id}) => {
             camera.fov = ( 360 / Math.PI ) * Math.atan( tanFOV * ( window.innerHeight / windowHeight ) );
             
             camera.updateProjectionMatrix();
-            camera.lookAt( scene.position );
+            //camera.lookAt( scene.position );
 
             renderer.setSize( window.innerWidth, window.innerHeight );
             renderer.render( scene, camera );
@@ -128,40 +114,6 @@ const RenderWorld = ({id}) => {
         console.log(intersects);
     }
 
-    useEffect(()=>{
-        console.log(id)
-        try{
-            enterWorld({
-                variables: {id}
-            });
-            function removeElementsByClass(className){
-                const elements = document.getElementsByClassName(className);
-                while(elements.length > 0){
-                    elements[0].parentNode.removeChild(elements[0]);
-                }
-            }
-            removeElementsByClass("canvas");
-    
-            document.querySelector('.world-container').appendChild( renderer.domElement );
-            window.addEventListener("pointerdown",onMouseDown,false);
-        }catch(e){
-            console.log(e)
-        }
-
-        return function cleanup () {
-            window.removeEventListener("pointerdown",onMouseDown,false);
-        }
-    },[])
-
-    if(error){
-        console.log(error)
-        return <div>Error loading world</div>
-    }
-
-    if(loading || world==={}){
-        return <div>Loading</div>
-    }
-
     const drawScene = () => {
         const group = new THREE.Group();
         for(let x = 0; x < 10; x++){
@@ -190,17 +142,77 @@ const RenderWorld = ({id}) => {
     const drawCharacter = () => {
         var geometry = new THREE.SphereGeometry(.1, 50, 50, 0, Math.PI * 2, 0, Math.PI * 2);
         var material = new THREE.MeshNormalMaterial();
-        var cube = new THREE.Mesh(geometry, material);
-        cube.translateZ(.1)
-        cube.position.x = 5;
-        cube.position.y=5;
-        scene.add(cube);
+        character = new THREE.Mesh(geometry, material);
+        character.translateZ(.1)
+        character.position.x = 5;
+        character.position.y = 5;
+        scene.add(character);
     }
 
-    drawScene();
-    drawCharacter();
+    useEffect(()=>{
+        function removeElementsByClass(className){
+            const elements = document.getElementsByClassName(className);
+            while(elements.length > 0){
+                elements[0].parentNode.removeChild(elements[0]);
+            }
+        }
+        removeElementsByClass("canvas");
+        console.log(id)
+        try{
+            enterWorld({
+                variables: {id}
+            }).then(data=>{
+                renderer.setClearColor(new THREE.Color("black"),1);
+                renderer.domElement.className = "canvas";
+                renderer.setSize( window.innerWidth, window.innerHeight);
 
-    console.log(world)
+                camera.position.z = 5;
+                camera.position.y = 5;
+                camera.position.x = 5;
+                camera.lookAt(new THREE.Vector3(5,5,0))
+                
+                camera.translateZ(-5);
+                camera.rotateX(.5);
+                camera.translateZ(5);
+
+                renderer.render( scene, camera );
+
+                console.log("Entered World");
+                console.log(data,me);
+
+                // data contains all scene objects for section
+                drawScene(data);
+
+                // check that me has position, if not assign default location (5,5) at main section
+                if(me.currentPosition){
+                    drawCharacter(me);
+                }
+                else {
+
+                }
+
+                document.querySelector('.world-container').appendChild( renderer.domElement );
+                window.addEventListener("pointerdown",onMouseDown,false);
+
+            }).catch(err=>{
+                console.log(err);
+                setWorldError(true);
+                setErrorMessage(err.message);
+            });
+
+
+            
+    
+            
+        }catch(e){
+            console.log(e)
+        }
+
+        return function cleanup () {
+            window.removeEventListener("pointerdown",onMouseDown,false);
+        }
+    },[])
+
     let animate = () => {
         requestAnimationFrame( animate );
         //controls.update();
@@ -210,12 +222,23 @@ const RenderWorld = ({id}) => {
     animate();
     return (
         <div>
-            
+            {
+                worldError?
+                <div className="error-div">
+                    <div className="error-header">
+                        Error Message
+                    </div>
+                    <div className="error-message">
+                        {errorMessage}
+                        <Link to="/"> Return home </Link>
+                    </div>
+                </div>:[]
+            }
         </div>
     )
 }
 
-const World = ({setShowNavFooter}) => {
+const World = ({setShowNavFooter, me}) => {
     const { id } = useParams();
     
     useEffect(()=>{
@@ -227,7 +250,7 @@ const World = ({setShowNavFooter}) => {
 
     return (
         <div className="world-container">
-            <RenderWorld id={id}/>
+            <RenderWorld id={id} me={me}/>
         </div>
     )
 }

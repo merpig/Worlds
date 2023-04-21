@@ -11,6 +11,14 @@ class FriendError extends ApolloError {
   }
 }
 
+class WorldError extends ApolloError {
+  constructor(message) {
+    super(message, 'WORLD_ERROR');
+
+    Object.defineProperty(this, 'name', { value: 'WorldError'});
+  }
+}
+
 const resolvers = {
   Query: {
     users: async () => {
@@ -147,6 +155,14 @@ const resolvers = {
       }
       throw new AuthenticationError('No user logged in');
     },
+    statusUpdate: async (_, {}, context) => {
+      if (context.user) {
+
+      }
+      return {
+        ok: true
+      }
+    },
     addWorld: async (_, {id, worldname, privacySetting, visitSetting}, context) => {
       const preworld = await World.create({ownedBy: id, worldname, privacySetting, visitSetting});
       const sectionNode = await SectionNode.create({});
@@ -177,8 +193,9 @@ const resolvers = {
         .populate('mainSection')
         .populate('players','username character placement')
         .populate('ownedBy','username status')
-        //console.log(world)
-      return world;
+      console.log(world)
+      if(world) return world;
+      throw new WorldError('World not found.')
     },
     sendMessage: async(_,{id,message},context) => {
       if (context.user) {
@@ -207,9 +224,17 @@ const resolvers = {
       }
       throw new AuthenticationError('You need to be logged in!');
     },
-    movePlayer: async(_,{},context) => {
-      
+    createPosition: async (_,{world_id,section_id,positionX,positionY},context) => {
+      if(context.user){
+        console.log(world_id,section_id,positionX,positionY)
+        //const position = await
+        return;
+      }
+      throw new AuthenticationError('You need to be logged in!');
     }
+    // movePlayer: async(_,{},context) => {
+      
+    // }
   },
 
   Subscription : {
@@ -218,6 +243,15 @@ const resolvers = {
         (_,__,{ps})=> ps.asyncIterator("UPDATE_LOCATION"),
         ({filtered},_,context)=> {
           
+        }
+      )
+    },
+    updateStatus: {
+      subscribe: withFilter(
+        (_,__,{ps})=> ps.asyncIterator('UPDATE_STATUS'),
+        ({filtered},_,context)=> {
+          console.log('TESTING LOG IN SUBSCRIPTION')
+          return filtered.includes(context.username)
         }
       )
     },

@@ -21,6 +21,14 @@ export const LOGOUT_USER = gql`
   }
 `;
 
+export const STATUS_UPDATE = gql`
+  mutation statusUpdate($status: String!){
+    statusUpdate(status: $status){
+      ok
+    }
+  }
+`
+
 export const ADD_USER = gql`
   mutation addUser($username: String!, $email: String!, $password: String!) {
     addUser(username: $username, email: $email, password: $password) {

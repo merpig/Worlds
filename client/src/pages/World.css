@@ -5,3 +5,25 @@
     width: 100vw;
     height: 100vh;
 }
+
+.error-div{
+    background-color: white;
+    max-width: 300px;
+    margin: auto;
+    margin-top: 20px;
+    border-radius: .25rem;
+}
+
+.error-header{
+    background-color: grey;
+    color: white;
+    font-size: 2rem;
+    padding: 8px;
+    text-align: center;
+    border-top-left-radius: .25rem;
+    border-top-right-radius: .25rem;
+}
+
+.error-message{
+    padding: 8px;
+}
