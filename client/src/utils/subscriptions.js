@@ -66,30 +66,12 @@ export const MESSAGE_SENT = gql`
   }
 `;
 
-export const LOGGED_IN = gql`
-  subscription loggedIn{
-    loggedIn{
-      _id
-      username
-    }
-  }
-`;
-
-export const LOGGED_OUT = gql`
-  subscription loggedOut{
-    loggedOut{
-      _id
-      username
-    }
-  }
-`;
-
 export const UPDATE_STATUS = gql`
   subscription updateStatus{
     updateStatus{
       _id
-      username
       status
+      type
     }
   }
 `;

@@ -43,7 +43,7 @@ const WorldCard = ({ _id, worldname, privacySetting, visitSetting, players, setW
               <Link to={`/world/${_id}`}>
                 <div className="btn confirm-btn">Enter World</div>
               </Link>
-              <button className="btn cancel-btn" onClick={()=>onDeleteWorld(_id)}><i className="fa fa-trash"></i></button>
+              <button className="btn cancel-btn" onClick={()=>onDeleteWorld(_id)}>Remove</button>
             </div>
         </div>}
       </div>

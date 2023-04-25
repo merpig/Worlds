@@ -1,11 +1,25 @@
+import { useMutation } from '@apollo/client';
 import React from 'react';
 import { Link } from 'react-router-dom';
 
 import Auth from '../../utils/auth';
+import { STATUS_UPDATE } from '../../utils/mutations';
 
 const Header = (props) => {
-  const logout = (event) => {
+  const [statusUpdate] = useMutation(STATUS_UPDATE);
+
+  const logout = async (event) => {
     event.preventDefault();
+    // try {
+    //   const {data} = await statusUpdate({
+    //     variables: {
+    //       status: "offline"
+    //     }
+    //   });
+    //   console.log(data)
+    // } catch(e){
+    //   console.log(e);
+    // }
     Auth.logout();
   };
 

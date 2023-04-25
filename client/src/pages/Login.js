@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useMutation } from '@apollo/client';
-import { LOGIN_USER } from '../utils/mutations';
+import { LOGIN_USER, STATUS_UPDATE } from '../utils/mutations';
 import "./Login.css";
 
 import Auth from '../utils/auth';
@@ -9,6 +9,7 @@ import Auth from '../utils/auth';
 const Login = ({setShowNavFooter}) => {
   const [formState, setFormState] = useState({ email: '', password: '' });
   const [login, { error, data }] = useMutation(LOGIN_USER);
+  const [statusUpdate] = useMutation(STATUS_UPDATE);
   
   useEffect(()=>{
     setShowNavFooter(true);
@@ -31,6 +32,15 @@ const Login = ({setShowNavFooter}) => {
       const { data } = await login({
         variables: { ...formState },
       });
+
+      
+      // const {data: statusData} = await statusUpdate({
+      //   variables: {
+      //     status: "online"
+      //   }
+      // });
+
+      // console.log(statusData)
 
       Auth.login(data.login.token);
     } catch (e) {

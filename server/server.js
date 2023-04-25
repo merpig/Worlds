@@ -49,8 +49,9 @@ const server = new ApolloServer({
         try {
           const { data } = jwt.verify(token, secret, { maxAge: expiration });
           
-          const userData = await User.findOneAndUpdate({_id: data._id},{status:"online",connection:"connected"});
+          const userData = await User.findOneAndUpdate({_id: data._id},{connection:"connected", status: "offline"});
           if(userData.connection!=="disconnected") return {...data,ps};
+          if(userData.statusPreference==="offline") return {...data,ps};
           console.log(`${data.username} has connected`);
           const friends = await Friend.find({
               $and: [
@@ -65,15 +66,19 @@ const server = new ApolloServer({
             return friend.requesting.username === data.username?
               friend.receiving.username:friend.requesting.username;
           });
-          //console.log(filtered)
-          ps.publish('LOGGED_IN',{
+
+          ps.publish('UPDATE_STATUS',{
             filtered,
-            loggedIn: userData // returned user data here
+            updateStatus: {
+              _id: userData._id,
+              status: "online",
+              type: "connecting"
+            }
           });
 
           return {...data,ps}
         } catch {
-          console.log('Invalid token');
+          //console.log('Invalid token');
           return false;
         }
       }
@@ -87,7 +92,7 @@ const server = new ApolloServer({
 
           setTimeout(async ()=>{
 
-            const userData = await User.findOneAndUpdate({_id: user._id,connection: "reconnecting"},{status:"offline",connection:"disconnected"},{new:"true"});
+            const userData = await User.findOneAndUpdate({_id: user._id,connection: "reconnecting"},{connection:"disconnected"},{new:"true"});
             if(!userData) return;
             console.log(`${user.username} has disconnected`);
             const friends = await Friend.find({
@@ -103,9 +108,13 @@ const server = new ApolloServer({
               return friend.requesting.username === user.username?
                 friend.receiving.username:friend.requesting.username;
             });
-            ps.publish('LOGGED_OUT',{
+            ps.publish('UPDATE_STATUS',{
               filtered,
-              loggedOut: userData // returned user data here
+              updateStatus: {
+                _id: userData._id,
+                status: "offline",
+                type: "disconnecting"
+              }
             });
           }, 3000)
         }

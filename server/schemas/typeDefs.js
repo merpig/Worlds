@@ -11,6 +11,7 @@ const typeDefs = gql`
     worlds: [World]
     locations: [Placement]
     status: String
+    statusPreference: String
   }
 
 
@@ -114,9 +115,9 @@ const typeDefs = gql`
   }
 
   type Status {
-    id: ID!
-    username: String!
+    _id: ID!
     status: String!
+    type: String
   }
 
   type Subscription {
@@ -142,7 +143,7 @@ const typeDefs = gql`
 
     login(email: String!, password: String!): Auth
     logout: LogoutResponse
-    statusUpdate(status: String!): StatusResponse
+    statusUpdate(status: String!, type: String, statusPreference: String): StatusResponse
 
     addWorld(id: ID!, worldname: String!, privacySetting: String!, visitSetting: String!): World
     editWorld(id: ID!, worldname: String!, privacySetting: String!, visitSetting: String!): World

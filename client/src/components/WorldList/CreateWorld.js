@@ -17,6 +17,13 @@ const CreateWorld = ({showCreateWorld,setWorlds,worlds,edit,worldData}) => {
   
     const handleChange = (event) => {
       let { name, value } = event.target;
+
+      if(name.includes('-')){
+        let splitName = name.split('-');
+        splitName[1] = splitName[1][0].toUpperCase() + splitName[1].slice(1);
+        name = splitName.join('');
+      }
+
       setFormState({
         ...formState,
         [name]: value,

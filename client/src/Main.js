@@ -16,14 +16,13 @@ import Users from './pages/Users';
 import Auth from './utils/auth';
 
 import { QUERY_ME, QUERY_FRIENDS } from './utils/queries';
-import { LOGOUT_USER } from './utils/mutations';
+import { LOGOUT_USER, STATUS_UPDATE } from './utils/mutations';
 import { 
   FRIEND_ADDED, 
   FRIEND_CANCELED, 
   FRIEND_UPDATED, 
   MESSAGE_SENT,
-  LOGGED_IN,
-  LOGGED_OUT
+  UPDATE_STATUS
 } from './utils/subscriptions';
 
 const Main = () => {
@@ -31,14 +30,13 @@ const Main = () => {
     const { loading: friendsLoading, data: friendsData} = useQuery(QUERY_FRIENDS);
 
     const [logout] = useMutation(LOGOUT_USER)
+    const [statusUpdate] = useMutation(STATUS_UPDATE)
 
     const { loading: newFriendDataLoading, data: newFriendData} = useSubscription(FRIEND_ADDED);
     const { loading: friendUpdatedLoading, data: friendUpdatedData} = useSubscription(FRIEND_UPDATED);
     const { loading: friendCanceledLoading, data: friendCanceledData} = useSubscription(FRIEND_CANCELED);
     const { loading: messageLoading, data: messageData} = useSubscription(MESSAGE_SENT);
-    const { loading: loggedInLoading, data: loggedInData, error: loggedInError} = useSubscription(LOGGED_IN);
-    const { loading: loggedOutLoading, data: loggedOutData, error: loggedOutError} = useSubscription(LOGGED_OUT);
-
+    const { loading: statusLoading, data: statusData, error: statusError} = useSubscription(UPDATE_STATUS);
 
     const [friends,setFriends]=useState([]);
     const [worlds,setWorlds]=useState([]);
@@ -47,49 +45,47 @@ const Main = () => {
 
     useEffect(()=>{
       Auth.loggedIn()
+      statusUpdate({
+        variables: {
+          status: "online",
+          type: "connecting"
+        }
+      })
     },[])
 
     useEffect(()=>{
-      //console.log(loggedInLoading,loggedInData,loggedInError)
-      if(!loggedInLoading&&loggedInData){
-        const id = loggedInData.loggedIn._id;
-        setFriends(friends=>{
-          const index = friends.findIndex(e=>e.receiving._id===id||e.requesting._id===id);
-          let friendToUpdate = {...friends[index]};
-          let receiving = {...friendToUpdate.receiving}
-          let requesting = {...friendToUpdate.requesting}
-          receiving._id===id?
-            receiving.status="online":
-            requesting.status="online";
-          return [
-            ...friends.slice(0,index),
-            {...friendToUpdate,receiving,requesting},
-            ...friends.slice(index+1)
-            ]
-        })
-      }
-    },[loggedInLoading,loggedInData,loggedInError])
+      console.log(statusLoading,statusData,statusError)
+      if(!statusLoading&&statusData){
 
-    useEffect(()=>{
-      //console.log(loggedOutLoading,loggedOutData,loggedOutError)
-      if(!loggedOutLoading&&loggedOutData){
-        const id = loggedOutData.loggedOut._id;
+        const { _id, status, type } = statusData.updateStatus;
+
         setFriends(friends=>{
-          const index = friends.findIndex(e=>e.receiving._id===id||e.requesting._id===id);
+          const index = friends.findIndex(e=>e.receiving._id===_id||e.requesting._id===_id);
           let friendToUpdate = {...friends[index]};
           let receiving = {...friendToUpdate.receiving}
           let requesting = {...friendToUpdate.requesting}
-          receiving._id===id?
-            receiving.status="offline":
-            requesting.status="offline";
+          receiving._id === _id?
+            receiving.status=status:
+            requesting.status=status;
           return [
             ...friends.slice(0,index),
             {...friendToUpdate,receiving,requesting},
             ...friends.slice(index+1)
             ]
-        })
+        });
+
+        console.log("howdy")
+
+        if( type === "connecting"){
+          statusUpdate({
+            variables: {
+              status: "online",
+              type: "responding"
+            }
+          })
+        }
       }
-    },[loggedOutLoading,loggedOutData,loggedOutError])
+    },[statusLoading,statusData,statusError])
 
     useEffect(()=>{
         if(!loading&&data)

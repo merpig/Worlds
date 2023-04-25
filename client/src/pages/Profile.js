@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Redirect, Link } from 'react-router-dom';
 import { useMutation } from '@apollo/client';
 // Utilities
-import { ADD_FRIEND, CONFIRM_FRIEND, CANCEL_FRIEND } from '../utils/mutations';
+import { ADD_FRIEND, CONFIRM_FRIEND, CANCEL_FRIEND, STATUS_UPDATE } from '../utils/mutations';
 // Auth
 import Auth from '../utils/auth';
 // CSS
@@ -104,10 +104,10 @@ const RenderAdded = ({friends,user,setFromProfile}) => {
             <h6 className="text-dark"><div className={`status-circle ${friend.requesting.status==="online"?"online":"offline"}`}></div>{friend.requesting.username}</h6>}
           <div >
             <Link to={`/users/${friend._id}`}>
-              <button className="btn go-btn"><i className="fa fa-user"></i></button>
+              <button className="btn go-btn">Profile</button>
             </Link>
-            <button className="btn go-btn" onClick={()=>onMessage(friend._id,friend)}><i className="fa fa-envelope"></i></button>
-            <button className="btn cancel-btn" onClick={()=>onCancel(friend._id)}><i className="fa fa-trash"></i></button>
+            <button className="btn go-btn" onClick={()=>onMessage(friend._id,friend)}>Message</button>
+            <button className="btn cancel-btn" onClick={()=>onCancel(friend._id)}>Remove</button>
           </div>
         </div>
       </div>)}  
@@ -118,6 +118,7 @@ const RenderAdded = ({friends,user,setFromProfile}) => {
 const RenderPending = ({friends,user}) => {
   const [confirmFriend] = useMutation(CONFIRM_FRIEND);
   const [cancelFriend] = useMutation(CANCEL_FRIEND);
+  const [statusUpdate] = useMutation(STATUS_UPDATE);
   const pending = friends.filter(friend=>friend.status===0);
   const incoming = pending.filter(friend=>user.username===friend.receiving.username);
   const outgoing = pending.filter(friend=>user.username===friend.requesting.username);
@@ -129,6 +130,12 @@ const RenderPending = ({friends,user}) => {
       await confirmFriend({
         variables: {id}
       });
+      statusUpdate({
+        variables: {
+          status: "online",
+          type: "connecting"
+        }
+      })
     } catch (e){
       console.log(e.message)
     }
@@ -144,6 +151,8 @@ const RenderPending = ({friends,user}) => {
       console.log(e.message)
     }
   }
+
+  
 
   return (
     <div className="row">
@@ -204,10 +213,10 @@ const RenderFriendList = ({data,friends,friendsLoading,setFromProfile}) => {
     <RenderBlocked friends={friends} user={data.me}/>
   ];
   return (
-    <div className="col-md-6 friends-list bg-dark pb-3">
+    <div className="col-lg-6 friends-list bg-dark pb-3">
       <h4 className="text-light py-2">
         Friends:
-        <button className="btn confirm-btn" onClick={()=>setShowAddFriend(!showAddFriend)} style={{fontSize: "1rem", float:"right"}}><i className="fa fa-plus"></i></button>
+        <button className="btn confirm-btn" onClick={()=>setShowAddFriend(!showAddFriend)} style={{fontSize: "1rem", float:"right"}}>Add</button>
       </h4>
       {showAddFriend?<AddFriend setShowAddFriend={setShowAddFriend}/>:[]}
       <div className="flex-row tab-container mb-1">
@@ -232,6 +241,19 @@ const RenderFriendList = ({data,friends,friendsLoading,setFromProfile}) => {
 
 const Profile = ({loading,data,error,friends,friendsLoading,setFromProfile}) => {
   // const { loading, data, error } = useQuery(QUERY_ME);
+  const [statusUpdate] = useMutation(STATUS_UPDATE);
+
+  const onChange = async event => {
+    console.log(event.target.value)
+    statusUpdate({
+      variables: {
+        status: "online",
+        type: "connecting",
+        statusPreference: event.target.value
+      }
+    })
+  }
+
   if (error) console.log(error);
   
   if (loading) {
@@ -253,7 +275,15 @@ const Profile = ({loading,data,error,friends,friendsLoading,setFromProfile}) => 
             <ul className="list-group">
               <li className="list-group-item">username: {data.me.username}</li>
               <li className="list-group-item">email: {data.me.email}</li>
-              <li className="list-group-item last">worlds: {data.me.worlds.length}</li>
+              <li className="list-group-item">worlds: {data.me.worlds.length}</li>
+              <li className="list-group-item last">status preference:
+                <select onChange={onChange} defaultValue={data.me.statusPreference || "default"}>
+                  <option value="default"> Default </option>
+                  <option value="away"> Away </option>
+                  <option value="do-not-disturb"> Do not disturb </option>
+                  <option value="offline"> Offline </option>
+                </select>
+              </li>
             </ul>
           </div>
         </div>

@@ -155,15 +155,53 @@ const resolvers = {
       }
       throw new AuthenticationError('No user logged in');
     },
-    statusUpdate: async (_, {}, context) => {
+    statusUpdate: async (_, {status,type, statusPreference}, context) => {
+      console.log(context.user)
+      const statuses = ["default","away","do-not-disturb","offline"];
       if (context.user) {
 
+        if(statusPreference && statuses.includes(statusPreference)){
+          const userData = await User.findOneAndUpdate({_id: data._id},{statusPreference});
+          context.user.statusPreference = statusPreference;
+
+          if(statusPreference==="offline"){
+            return {
+              ok: true
+            }
+          }
+        }
+
+        const friends = await Friend.find({
+          $and: [
+            {$or: [{ requesting: context.user._id }, { receiving: context.user._id }]},
+            {status: 1}
+          ]
+        },'receiving requesting')
+        .populate('receiving')
+        .populate('requesting');
+
+        const filtered = friends.map(friend=>{
+          return friend.requesting.username === context.user.username?
+            friend.receiving.username:friend.requesting.username;
+        });
+        console.log("hello");
+        // Send filtered data, and user's data
+        // 
+        context.ps.publish('UPDATE_STATUS', {
+          filtered,
+          updateStatus: {
+            _id: context.user._id,
+            status,
+            type
+          }
+        });
       }
       return {
         ok: true
       }
     },
     addWorld: async (_, {id, worldname, privacySetting, visitSetting}, context) => {
+      console.log({id, worldname, privacySetting, visitSetting})
       const preworld = await World.create({ownedBy: id, worldname, privacySetting, visitSetting});
       const sectionNode = await SectionNode.create({});
       const section = await Section.create({belongsTo: preworld._id, nodes: sectionNode._id});
@@ -250,7 +288,7 @@ const resolvers = {
       subscribe: withFilter(
         (_,__,{ps})=> ps.asyncIterator('UPDATE_STATUS'),
         ({filtered},_,context)=> {
-          console.log('TESTING LOG IN SUBSCRIPTION')
+          console.log('TESTING STATUS SUBSCRIPTION')
           return filtered.includes(context.username)
         }
       )

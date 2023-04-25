@@ -18,6 +18,10 @@ const userSchema = new Schema({
     type: String,
     default: "offline"
   },
+  statusPrefence: {
+    type: String,
+    default: "default"
+  },
   password: {
     type: String,
     required: true,

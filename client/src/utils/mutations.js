@@ -22,8 +22,8 @@ export const LOGOUT_USER = gql`
 `;
 
 export const STATUS_UPDATE = gql`
-  mutation statusUpdate($status: String!){
-    statusUpdate(status: $status){
+  mutation statusUpdate($status: String!, $type: String, $statusPreference: String){
+    statusUpdate(status: $status, type: $type, statusPreference: $statusPreference){
       ok
     }
   }
